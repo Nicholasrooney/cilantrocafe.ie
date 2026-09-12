@@ -3,6 +3,7 @@ $pageTitle       = 'Cilantro Café | Mexican café in Dublin';
 $pageDescription = 'Tacos, flautas, birria, brunch plates and fresh conchas. Eat in, sit outside, or book a table at Cilantro Café, Dublin.';
 $activePage      = 'home';
 require __DIR__ . '/includes/header.php';
+require __DIR__ . '/includes/directions.php';
 
 $featured = [
     ['img' => 'steak-tacos.jpg',           'name' => 'Steak taco trio',   'price' => '16.50', 'alt' => 'Three steak tacos with guacamole and pico de gallo'],
@@ -60,12 +61,7 @@ $featured = [
     <div class="container visit-grid">
         <div>
             <h2>Visit us</h2>
-            <?php if ($site['address']): ?>
-                <p class="visit-address"><?= e($site['address']) ?></p>
-            <?php endif; ?>
-            <?php if ($site['maps_url']): ?>
-                <p><a class="text-link" href="<?= e($site['maps_url']) ?>" target="_blank" rel="noopener">Get directions</a></p>
-            <?php endif; ?>
+            <?php render_directions_actions($site); ?>
             <?php if (!empty($site['hours'])): ?>
                 <dl class="hours hours-large">
                     <?php foreach ($site['hours'] as $days => $time): ?>
@@ -81,5 +77,7 @@ $featured = [
         </a>
     </div>
 </section>
+
+<?php render_map_section($site); ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

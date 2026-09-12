@@ -10,10 +10,17 @@ $site = [
     'instagram' => 'https://www.instagram.com/cilantrocafe_dublin/',
 
     // Contact details (fill these in, they appear in the footer and on the home page)
-    'address'   => '',   // e.g. '12 Main Street, Deansgrange, Co. Dublin, A94 XXXX'
+    'address'   => 'Unit 7, Newpark Centre, Newtownpark Avenue, Blackrock, Co. Dublin',
+    'eircode'   => 'A94 W956',
     'phone'     => '',   // e.g. '01 234 5678'
     'email'     => '',   // e.g. 'hello@cilantro.ie'
-    'maps_url'  => '',   // Google Maps share link
+    'maps_url'  => 'https://www.google.com/maps/search/?api=1&query=Cilantro+Cafe%2C+Newpark+Centre%2C+Blackrock%2C+A94+W956',
+
+    // Optional but recommended: the exact pin, as "latitude,longitude".
+    // Get it by right-clicking the café in Google Maps and copying the numbers.
+    // When set, directions use this instead of the address text, which stops
+    // map apps guessing at the wrong unit in the shopping centre.
+    'coords'    => '',
 
     // Opening hours. Leave the array empty to hide the hours block.
     // Example: 'Mon to Fri' => '9:00 to 16:00',
@@ -38,6 +45,30 @@ $booking = [
 
     // For later: address that should receive booking notifications
     'notify_email'      => '',
+];
+
+/*
+ * Google Calendar sync (one way: website -> Google).
+ *
+ * Setup is documented in docs/google-calendar-setup.md. In short: create a
+ * service account, put its JSON key at the path below, then share the calendar
+ * with the service account's email address giving it "Make changes to events".
+ *
+ * Leave 'enabled' false until the key file is in place. Sync failures never
+ * block a booking either way — they are written to the log file instead.
+ */
+$calendar = [
+    'enabled'          => false,
+    'calendar_id'      => '',   // from Google Calendar > Settings > Integrate calendar
+    'key_file'         => __DIR__ . '/secrets/google-service-account.json',
+    'token_cache'      => __DIR__ . '/../data/.google-token.json',
+    'log_file'         => __DIR__ . '/../data/calendar-sync.log',
+    'timezone'         => 'Europe/Dublin',
+    'duration_minutes' => 90,   // how long a table is held in the calendar
+
+    // Token for calendar-test.php. Set to a long random string to run the test
+    // page, then blank it again when you are finished.
+    'test_token'       => '',
 ];
 
 function e($value) {

@@ -595,3 +595,66 @@ a:hover { color: var(--fascia-deep); }
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 0.9rem;
 }
+
+/* ---------- Directions & map ---------- */
+
+.directions-address {
+  font-size: 1.25rem;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+.eircode {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.directions-apps {
+  margin: 0.9rem 0 1.5rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.directions-apps a { white-space: nowrap; }
+
+.map-strip { padding-top: 0; }
+.map-frame {
+  position: relative;
+  border: 1px solid var(--line);
+  background: var(--wall);
+  overflow: hidden;
+}
+.map-frame > * {
+  display: block;
+  width: 100%;
+  height: clamp(260px, 42vw, 440px);
+  border: 0;
+}
+
+/* The placeholder shown until someone asks for the map */
+.map-load {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 2rem 1.25rem;
+  font-family: var(--sans);
+  color: var(--ink);
+  text-align: center;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 18px, rgba(13, 92, 70, 0.04) 18px 36px),
+    var(--wall);
+  cursor: pointer;
+}
+.map-load:hover { background-color: #e8efe6; }
+.map-load-title {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  color: var(--fascia);
+}
+.map-load-note { font-weight: 500; max-width: 28rem; }
+.map-load-small { font-size: 0.875rem; color: var(--muted); }

@@ -10,6 +10,7 @@
  */
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/calendar-sync.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
@@ -95,6 +96,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $saved = save_booking($old, $booking);
             if (!$saved) {
                 $errors['form'] = 'Your booking could not be saved. Please phone or email us instead.';
+            } else {
+                // Mirror it onto the Google Calendar. Returns null and logs if
+                // sync is off or Google is unreachable; the booking still stands.
+                calendar_sync_booking($old, $calendar);
             }
         }
 

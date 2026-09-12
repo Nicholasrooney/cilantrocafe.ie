@@ -61,3 +61,35 @@
     items[current].focus();
   });
 })();
+
+// Directions: open the maps app this device actually uses
+(function () {
+  var btn = document.querySelector('.btn-directions');
+  if (!btn || !btn.dataset.apple) return;
+
+  var ua = navigator.userAgent || '';
+  var isApple = /iPad|iPhone|iPod|Macintosh/.test(ua) ||
+                // iPadOS 13+ reports itself as a Mac, so check for touch too
+                (/Mac/.test(ua) && navigator.maxTouchPoints > 1);
+
+  // Everyone starts on the Google link, which works everywhere. Apple devices
+  // get upgraded to Apple Maps so the button opens their default app.
+  if (isApple) btn.href = btn.dataset.apple;
+})();
+
+// Map: don't load Google until the visitor asks for it
+(function () {
+  var loader = document.querySelector('.map-load');
+  if (!loader) return;
+
+  loader.addEventListener('click', function () {
+    var frame = document.createElement('iframe');
+    frame.src = loader.dataset.embed;
+    frame.title = 'Map showing ' + loader.dataset.place;
+    frame.loading = 'lazy';
+    frame.referrerPolicy = 'no-referrer-when-downgrade';
+    frame.allowFullscreen = true;
+    frame.className = 'map-embed';
+    loader.parentNode.replaceChild(frame, loader);
+  });
+})();

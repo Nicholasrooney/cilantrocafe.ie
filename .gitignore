@@ -11,3 +11,11 @@ desktop.ini
 
 # Staging folder for source photos/menu scans — not site content
 Extras/
+
+# Credentials — never commit
+includes/secrets/*.json
+data/.google-token.json
+data/*.log
+
+# Scratch output from web lookups
+.firecrawl/
