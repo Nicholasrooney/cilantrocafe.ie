@@ -1,9 +1,17 @@
 <?php
-$pageTitle       = 'Menu | Cilantro Café';
-$pageDescription = 'Cilantro Café menu: taco trios, enchiladas verdes, flautas, birria, the Celtic Aztec Burger, kids meals, conchas and scones, with prices and allergens.';
+$pageTitle       = 'Menu & Prices | Cilantro Café, Blackrock Dublin';
+$pageDescription = 'Full Cilantro Café menu with prices: breakfast and brunch, tortas, taco trios, birria, enchiladas, kids meals, conchas, coffee, wine and cocktails. Allergens listed on every dish.';
+$pageKeywords    = 'Mexican menu Dublin, taco prices Dublin, brunch menu Blackrock, birria Dublin, Mexican food Blackrock, café menu Dublin';
 $activePage      = 'menu';
+
+require_once __DIR__ . '/includes/menu-data.php';
+require_once __DIR__ . '/includes/seo.php';
+$pageSchema = [
+    seo_menu_node($menu),
+    seo_breadcrumbs(['Menu' => 'menu.php']),
+];
+
 require __DIR__ . '/includes/header.php';
-require __DIR__ . '/includes/menu-data.php';
 ?>
 
 <section class="page-intro">

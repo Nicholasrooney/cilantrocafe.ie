@@ -1,7 +1,29 @@
 <?php
-$pageTitle       = 'Cilantro Café | Mexican café in Dublin';
-$pageDescription = 'Tacos, flautas, birria, brunch plates and fresh conchas. Eat in, sit outside, or book a table at Cilantro Café, Dublin.';
+$pageTitle       = 'Cilantro Café | Mexican Café & Brunch in Blackrock, Dublin';
+$pageDescription = 'Mexican café in Blackrock, Dublin. Tacos, birria, flautas, tortas, all-day brunch and fresh conchas, with coffee and cocktails. Eat in, sit outside, or book a table.';
+$pageKeywords    = 'Mexican restaurant Blackrock, Mexican café Dublin, tacos Dublin, brunch Blackrock, birria Dublin, breakfast Blackrock, Newpark Centre café';
 $activePage      = 'home';
+
+// Answers here are all true of the café — everything comes from the menu, the
+// address or the booking form. A wrong answer in a rich result is worse than
+// no rich result at all.
+require_once __DIR__ . '/includes/seo.php';
+$pageSchema = [
+    seo_faq([
+        'Where is Cilantro Café?' =>
+            'Cilantro Café is at Unit 7, Newpark Centre, Newtownpark Avenue, Blackrock, Co. Dublin, A94 W956.',
+        'Do you take bookings?' =>
+            'Yes. You can book a table through the website, and we will be in touch if we cannot fit you in at that time. For groups larger than ten, get in touch directly.',
+        'Do you serve breakfast and brunch?' =>
+            'Yes. Breakfast is served until 12:00, and the Morning Munchie and chilaquiles are available all day. The menu includes pancakes, French toast, huevos rancheros, a breakfast burrito, avocado toast and a full Irish.',
+        "Is there a children's menu?" =>
+            'Yes, there is a kids menu for under 13s with chicken tenders, sausages, a quesadilla and pancakes, each served with fries and a juice.',
+        'Do you cater for allergies?' =>
+            'Allergen codes are listed next to every dish on our menu, covering gluten, dairy, eggs, fish, nuts, sesame, soy and sulphites. Tell a member of staff about any dietary needs when you order.',
+        'Can you sit outside?' =>
+            'Yes, there are tables out front when the weather allows, as well as booth and table seating inside. You can state a seating preference when you book.',
+    ]),
+];
 require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/directions.php';
 

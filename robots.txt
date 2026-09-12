@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Staff diary and machinery — nothing here for search engines.
+Disallow: /staff/
+Disallow: /includes/
+Disallow: /data/
+Disallow: /db/
+Disallow: /cron/
+Disallow: /docs/
+Disallow: /slots.php
+Disallow: /calendar-test.php
+
+Sitemap: https://cilantrocafe.ie/sitemap.xml

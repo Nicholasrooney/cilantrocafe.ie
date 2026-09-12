@@ -1,7 +1,11 @@
 <?php
 $pageTitle       = 'Privacy notice | Cilantro Café';
 $pageDescription = 'How Cilantro Café uses the details you give us when you book a table, how long we keep them, and how to ask for a copy or have them deleted.';
+$pageRobots      = 'noindex, follow';
 $activePage      = 'privacy';
+
+require_once __DIR__ . '/includes/seo.php';
+$pageSchema = [seo_breadcrumbs(['Privacy notice' => 'privacy.php'])];
 require __DIR__ . '/includes/header.php';
 
 $contact = $site['email'] ?: ($site['phone'] ?: 'us in the café');

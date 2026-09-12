@@ -1,9 +1,13 @@
 <?php
 require __DIR__ . '/includes/booking-handler.php';
 
-$pageTitle       = 'Book a table | Cilantro Café';
-$pageDescription = 'Book a table at Cilantro Café, Dublin. Choose a date, time and number of guests.';
+$pageTitle       = 'Book a Table | Cilantro Café, Blackrock Dublin';
+$pageDescription = 'Book a table at Cilantro Café in Blackrock, Dublin. Choose your date, time and party size — we confirm by phone or email if anything needs to change.';
+$pageKeywords    = 'book a table Blackrock, Mexican restaurant booking Dublin, reserve table Blackrock';
 $activePage      = 'booking';
+
+require_once __DIR__ . '/includes/seo.php';
+$pageSchema = [seo_breadcrumbs(['Book a table' => 'booking.php'])];
 require __DIR__ . '/includes/header.php';
 
 function field_error(array $errors, string $field): string {

@@ -1,7 +1,12 @@
 <?php
-$pageTitle       = 'Gallery | Cilantro Café';
-$pageDescription = 'Photos of the food and the café at Cilantro Café, Dublin.';
+$pageTitle       = 'Gallery | Cilantro Café, Blackrock Dublin';
+$pageDescription = 'Photos of the food and the room at Cilantro Café in Blackrock, Dublin — tacos, brunch plates, conchas and the shopfront.';
+$pageKeywords    = 'Cilantro Café photos, Mexican food Dublin photos, Blackrock café';
 $activePage      = 'gallery';
+
+require_once __DIR__ . '/includes/seo.php';
+$pageSchema = [seo_breadcrumbs(['Gallery' => 'gallery.php'])];
+
 require __DIR__ . '/includes/header.php';
 
 // To add a photo: upload it to /images and add a line here.
