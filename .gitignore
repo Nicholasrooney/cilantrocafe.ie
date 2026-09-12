@@ -1,0 +1,10 @@
+# Customer booking data — never commit, never overwrite on deploy
+data/bookings.csv
+
+# Source archives / backups
+*.zip
+
+# OS cruft
+Thumbs.db
+desktop.ini
+.DS_Store

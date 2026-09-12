@@ -1,0 +1,9 @@
+# Block all public access to this folder.
+# It holds booking requests with customer names, phones and emails.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
