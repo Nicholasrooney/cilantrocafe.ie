@@ -717,3 +717,10 @@ a:hover { color: var(--fascia-deep); }
   margin-top: 0.15rem;
   flex: none;
 }
+
+.slot-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  color: var(--error);
+}
+.slot-note[hidden] { display: none; }

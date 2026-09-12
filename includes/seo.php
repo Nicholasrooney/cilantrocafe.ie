@@ -91,11 +91,14 @@ function seo_restaurant_node(): array
         $node['sameAs'] = [$site['instagram']];
     }
 
-    // Opening hours, only if they have actually been filled in. Publishing
-    // wrong hours is worse than publishing none — Google shows them.
-    $hours = seo_opening_hours($site['hours'] ?? []);
-    if ($hours) {
-        $node['openingHoursSpecification'] = $hours;
+    // Opening hours come from $booking['service_hours'] via hours.php, the same
+    // source the site and the booking form use, so the three cannot disagree.
+    // Closed days are published explicitly — Google reads a missing day as
+    // unknown, but an explicit closure shows as "Closed", which is what stops
+    // somebody driving over on a Monday.
+    if (!empty($booking['service_hours'])) {
+        require_once __DIR__ . '/hours.php';
+        $node['openingHoursSpecification'] = hours_schema($booking['service_hours']);
     }
 
     return $node;

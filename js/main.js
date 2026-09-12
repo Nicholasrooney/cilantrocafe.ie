@@ -161,19 +161,39 @@ function cookieChoice(set) {
     fetch(url, { signal: inFlight.signal })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
-        if (!data || !data.slots) return;
+        if (!data) return;
 
+        var note = document.getElementById('slot-note');
         var chosen = time.value;
-        Array.prototype.forEach.call(time.options, function (opt) {
-          if (!opt.value) return;
-          var free = data.slots[opt.value];
-          opt.disabled = free === false;
-          opt.textContent = opt.value + (free === false ? ' — fully booked' : '');
+
+        // Rebuild the list: opening hours differ by day and the cafe is shut
+        // on Mondays, so the times themselves change, not just their state.
+        while (time.options.length > 1) time.remove(1);
+
+        if (data.closed) {
+          time.value = '';
+          if (note) {
+            note.textContent = data.message || 'We are closed that day.';
+            note.hidden = false;
+          }
+          return;
+        }
+
+        if (note) note.hidden = true;
+
+        Object.keys(data.slots).forEach(function (t) {
+          var free = data.slots[t];
+          var opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t + (free ? '' : ' — fully booked');
+          opt.disabled = !free;
+          if (t === chosen) opt.selected = true;
+          time.appendChild(opt);
         });
 
-        // If their chosen time just became unavailable, clear it rather than
+        // If their chosen time is gone or now full, clear it rather than
         // submitting something that will be rejected.
-        if (chosen && time.selectedOptions[0] && time.selectedOptions[0].disabled) {
+        if (chosen && (!time.value || (time.selectedOptions[0] && time.selectedOptions[0].disabled))) {
           time.value = '';
         }
       })

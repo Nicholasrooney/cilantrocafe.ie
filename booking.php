@@ -38,6 +38,14 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
                 Message us on <a href="<?= e($site['instagram']) ?>" target="_blank" rel="noopener">Instagram</a>.
             <?php endif; ?>
         </p>
+        <?php if (!empty($site['hours'])): ?>
+            <dl class="hours">
+                <?php foreach ($site['hours'] as $days => $time): ?>
+                    <div><dt><?= e($days) ?></dt><dd><?= e($time) ?></dd></div>
+                <?php endforeach; ?>
+            </dl>
+        <?php endif; ?>
+
         <img class="booking-photo" src="images/french-toast.jpg" alt="Maple syrup being poured over French toast with strawberries" loading="lazy">
     </div>
 
@@ -80,13 +88,15 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
                             <label for="time">Time</label>
                             <select id="time" name="time" required<?= error_attrs($errors, 'time') ?>>
                                 <option value="">Choose a time</option>
-                                <?php foreach ($booking['times'] as $t): ?>
-                                    <?php $free = $slots[$t] ?? true; ?>
+                                <?php foreach ($slots as $t => $free): ?>
                                     <option value="<?= e($t) ?>"
                                             <?= $old['time'] === $t ? 'selected' : '' ?>
                                             <?= $free ? '' : 'disabled' ?>><?= e($t) ?><?= $free ? '' : ' — fully booked' ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <p class="slot-note" id="slot-note" <?= $slots ? 'hidden' : '' ?>>
+                                <?= $slots ? '' : 'We are closed that day — pick another date.' ?>
+                            </p>
                             <?= field_error($errors, 'time') ?>
                         </div>
                     </div>

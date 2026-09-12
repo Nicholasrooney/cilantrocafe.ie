@@ -61,7 +61,42 @@ $node = seo_restaurant_node();
 check('typed as both Restaurant and café', $node['@type'], ['Restaurant', 'CafeOrCoffeeShop']);
 check('locality is Blackrock',             $node['address']['addressLocality'], 'Blackrock');
 check('eircode carried through',           $node['address']['postalCode'], 'A94 W956');
-check('no opening hours claimed while config is empty', isset($node['openingHoursSpecification']), false);
+check('opening hours published', count($node['openingHoursSpecification']), 7);
+
+$byDay = [];
+foreach ($node['openingHoursSpecification'] as $spec) {
+    $byDay[basename($spec['dayOfWeek'])] = $spec['opens'] . '-' . $spec['closes'];
+}
+check('Monday published as closed',  $byDay['Monday'],   '00:00-00:00');
+check('weekday hours',               $byDay['Wednesday'], '09:00-16:00');
+check('weekend hours run later',     $byDay['Saturday'],  '09:00-17:00');
+
+echo "
+Opening hours as the single source
+----------------------------------
+";
+
+check('Monday is closed',          hours_is_open('2026-09-14'), false);
+check('Tuesday is open',           hours_is_open('2026-09-15'), true);
+check('no slots on a closed day',  hours_slots_for_date('2026-09-14'), []);
+
+$tue = hours_slots_for_date('2026-09-15');
+$sat = hours_slots_for_date('2026-09-19');
+check('weekday opens at 09:00',    $tue[0], '09:00');
+check('weekday last slot is 15:00 (an hour before a 16:00 close)', end($tue), '15:00');
+check('weekend last slot is 16:00 (an hour before a 17:00 close)', end($sat), '16:00');
+check('weekend has two more slots than a weekday', count($sat) - count($tue), 2);
+
+check('next open day after Monday is Tuesday', hours_next_open_date('2026-09-14'), '2026-09-15');
+
+$display = hours_display();
+check('closed day shown as Closed',  $display['Monday'], 'Closed');
+check('consecutive days grouped',    isset($display['Tuesday to Friday']), true);
+check('a pair joined with &',        isset($display['Saturday & Sunday']), true);
+
+// The staff form offers every slot the cafe ever runs, so they can take a
+// booking outside normal service if they want to.
+check('staff slot list spans both schedules', in_array('16:00', $booking['times'], true), true);
 
 require __DIR__ . '/../includes/menu-data.php';
 $menuNode = seo_menu_node($menu);

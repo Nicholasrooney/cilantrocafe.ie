@@ -22,19 +22,41 @@ $site = [
     // map apps guessing at the wrong unit in the shopping centre.
     'coords'    => '',
 
-    // Opening hours. Leave the array empty to hide the hours block.
-    // Example: 'Mon to Fri' => '9:00 to 16:00',
-    'hours' => [
-    ],
+    // Opening hours are NOT set here. They come from $booking['service_hours']
+    // below, and are filled in at the bottom of this file, so the hours shown
+    // on the site, the hours Google is told, and the times the booking form
+    // offers can never disagree with each other.
+    'hours' => [],
 ];
 
 // Booking form options
 $booking = [
-    // Time slots shown in the booking form. Match these to your opening hours.
-    'times' => [
-        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-        '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    /*
+     * Opening hours, per day. [open, close] in 24-hour time, or null if the
+     * café is closed that day. This is the single source of truth — it drives
+     * the hours on the site, the hours Google shows, and the slots the booking
+     * form offers.
+     */
+    'service_hours' => [
+        'mon' => null,                 // closed
+        'tue' => ['09:00', '16:00'],
+        'wed' => ['09:00', '16:00'],
+        'thu' => ['09:00', '16:00'],
+        'fri' => ['09:00', '16:00'],
+        'sat' => ['09:00', '17:00'],
+        'sun' => ['09:00', '17:00'],
     ],
+
+    // How often a slot comes round, in minutes.
+    'slot_minutes' => 30,
+
+    // The last booking is this many minutes before closing, so nobody books a
+    // table for five minutes before the doors shut. Weekdays close at 16:00,
+    // so the last slot is 15:00; weekends close at 17:00, so it is 16:00.
+    'last_booking_before_close' => 60,
+
+    // Filled in below from service_hours. Do not edit by hand.
+    'times' => [],
     'max_guests'        => 10,  // bigger groups are asked to phone or email
     'days_ahead'        => 60,  // how far in advance people can book
     'seating'           => ['No preference', 'Booth inside', 'Table outside'],
@@ -134,6 +156,15 @@ $calendar = [
     // page, then blank it again when you are finished.
     'test_token'       => '',
 ];
+
+/*
+ * Everything below is derived from service_hours. One source of truth: change
+ * the hours above and the site, the schema and the booking form all follow.
+ */
+require_once __DIR__ . '/hours.php';
+
+$site['hours']     = hours_display($booking['service_hours']);
+$booking['times']  = hours_all_slots($booking['service_hours']);
 
 /*
  * Credentials live outside this file so they never reach Git.

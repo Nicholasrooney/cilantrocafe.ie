@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/hours.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/bookings.php';
 require_once __DIR__ . '/includes/capacity.php';
@@ -35,16 +36,29 @@ if ($parsed < $today || $parsed > $lastDay) {
     exit;
 }
 
+// Closed that day? Say so, and point at the next day we are open.
+$daySlots = hours_slots_for_date($date);
+if (!$daySlots) {
+    echo json_encode([
+        'date'   => $date,
+        'closed' => true,
+        'slots'  => [],
+        'message' => 'We are closed that day.',
+        'next_open' => hours_next_open_date($date),
+    ]);
+    exit;
+}
+
 try {
     $available = capacity_slot_availability(
         $date,
-        $booking['times'],
+        $daySlots,
         (int) ($booking['max_covers_per_slot'] ?? 0),
         $guests
     );
 } catch (Throwable $e) {
     // No database yet — don't block anybody from booking.
-    $available = array_fill_keys($booking['times'], true);
+    $available = array_fill_keys($daySlots, true);
 }
 
 // Past times today are no use to anyone either.
@@ -57,4 +71,9 @@ if ($date === $today->format('Y-m-d')) {
     }
 }
 
-echo json_encode(['date' => $date, 'guests' => $guests, 'slots' => $available]);
+echo json_encode([
+    'date'   => $date,
+    'guests' => $guests,
+    'closed' => false,
+    'slots'  => $available,
+]);

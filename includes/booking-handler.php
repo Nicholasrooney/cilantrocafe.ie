@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/hours.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/bookings.php';
 require_once __DIR__ . '/capacity.php';
@@ -73,9 +74,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['date'] = 'Choose a date between today and ' . $lastDay->format('j F Y') . '.';
     }
 
-    if (!in_array($old['time'], $booking['times'], true)) {
-        $errors['time'] = 'Choose a time.';
-    } elseif ($date && !isset($errors['date']) && $date == $today) {
+    // Which slots exist on the chosen day — the café is not open every day,
+    // and weekends run an hour later than weekdays.
+    $daySlots = !isset($errors['date']) ? hours_slots_for_date($old['date']) : [];
+
+    if (!isset($errors['date']) && !$daySlots) {
+        $nextOpen = hours_next_open_date($old['date']);
+        $errors['date'] = 'We are closed that day.'
+            . ($nextOpen
+                ? ' The next day we are open is '
+                  . (new DateTimeImmutable($nextOpen, new DateTimeZone('Europe/Dublin')))->format('l j F') . '.'
+                : '');
+    } elseif (!in_array($old['time'], $daySlots, true)) {
+        $errors['time'] = 'Choose a time we are open.';
+    } elseif ($date && $date == $today) {
         $now = new DateTimeImmutable('now', new DateTimeZone('Europe/Dublin'));
         if ($old['time'] <= $now->format('H:i')) {
             $errors['time'] = 'That time has passed. Choose a later time.';
@@ -155,16 +167,21 @@ function booking_slot_availability(string $date, int $guests): array
 {
     global $booking;
 
+    $daySlots = hours_slots_for_date($date);
+    if (!$daySlots) {
+        return [];
+    }
+
     try {
         return capacity_slot_availability(
             $date,
-            $booking['times'],
+            $daySlots,
             (int) ($booking['max_covers_per_slot'] ?? 0),
             max(1, $guests)
         );
     } catch (Throwable $e) {
         // No database yet? Offer everything rather than showing an empty form.
-        return array_fill_keys($booking['times'], true);
+        return array_fill_keys($daySlots, true);
     }
 }
 
