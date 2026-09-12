@@ -8,3 +8,6 @@ data/bookings.csv
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Staging folder for source photos/menu scans — not site content
+Extras/
