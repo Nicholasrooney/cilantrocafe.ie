@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Set up Cilantro Café</title>
+<link rel="stylesheet" href="staff/staff.css">
+<style>
+  .wrap { max-width: 34rem; }
+  .step { counter-increment: step; }
+  code { background: #eef2ee; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.9em; }
+  .ok { color: #146b4f; font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="bar"><span class="bar-brand">Cilantro <span>setup</span></span></header>
+<main class="wrap">
+
+
+    <form class="card form" method="post" action="setup.php" autocomplete="off">
+        <h1>Set up the database</h1>
+        <p class="sub">Create the database first in hPanel → <strong>Databases → MySQL
+           Databases</strong>, giving the user full access. Then put the same three
+           values here.</p>
+
+                    <p class="alert" role="alert">Could not connect: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it</p>
+        
+        <div class="field">
+            <label for="name">Database name</label>
+            <input id="name" name="name" value="u999_nope" placeholder="u123456789_cilantro" required>
+                    </div>
+
+        <div class="field">
+            <label for="user">Database user</label>
+            <input id="user" name="user" value="u999_nope" placeholder="u123456789_cilantro" required>
+                    </div>
+
+        <div class="field">
+            <label for="pass">Database password</label>
+            <input id="pass" name="pass" type="password" required>
+                    </div>
+
+        <div class="field">
+            <label for="host">Database host</label>
+            <input id="host" name="host" value="localhost">
+            <p class="sub">Leave as <code>localhost</code> unless Hostinger told you otherwise.</p>
+                    </div>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:1.5rem 0">
+
+        <div class="field">
+            <label for="staffpw">Staff password <span class="opt">(optional)</span></label>
+            <input id="staffpw" name="staffpw" type="password">
+            <p class="sub">The password staff type at <code>/staff/</code>. Leave blank to keep
+               whatever is already set.</p>
+        </div>
+
+        <div class="field">
+            <label for="smtppass">Mailbox password <span class="opt">(optional)</span></label>
+            <input id="smtppass" name="smtppass" type="password">
+            <p class="sub">Only if you have created <code>bookings@cilantrocafe.ie</code> in
+               hPanel. Leave blank for now — booking emails still send without it.</p>
+        </div>
+
+        <div class="form-do">
+            <button class="btn-p" type="submit">Create the tables and connect</button>
+        </div>
+
+        <p class="sub" style="margin-top:1rem">Nothing is written until the connection is
+           proven to work.</p>
+    </form>
+
+
+</main>
+</body>
+</html>

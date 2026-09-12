@@ -84,8 +84,8 @@ $booking = [
      * The public form stops taking bookings once a slot is full. Staff can
      * still override, and the override is recorded.
      */
-    'capacity_mode' => 'tables',
-    'max_per_slot'  => 15,
+    'capacity_mode' => 'covers',
+    'max_per_slot'  => 30,
 
     // Customer details are anonymised this many months after their last visit.
     'retention_months'    => 24,

@@ -12,3 +12,5 @@ Disallow: /slots.php
 Disallow: /calendar-test.php
 
 Sitemap: https://cilantrocafe.ie/sitemap.xml
+
+Disallow: /setup.php

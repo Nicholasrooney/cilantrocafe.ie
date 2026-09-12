@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Set up Cilantro Café</title>
+<link rel="stylesheet" href="staff/staff.css">
+<style>
+  .wrap { max-width: 34rem; }
+  .step { counter-increment: step; }
+  code { background: #eef2ee; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.9em; }
+  .ok { color: #146b4f; font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="bar"><span class="bar-brand">Cilantro <span>setup</span></span></header>
+<main class="wrap">
+
+
+    <div class="card">
+        <h1>Setup is locked</h1>
+        <p>To unlock it, create an empty file on the server at:</p>
+        <p><code>public_html/includes/secrets/SETUP-ALLOWED</code></p>
+        <p>In hPanel, that is <strong>File Manager</strong> → open
+           <code>includes/secrets</code> → <strong>New File</strong> → name it
+           exactly <code>SETUP-ALLOWED</code> with no extension.</p>
+        <p class="sub">This is here so that only somebody with access to the server can
+           point this site at a database — knowing the web address is not enough.
+           The file is deleted automatically when setup finishes.</p>
+        <p><a class="btn-s" href="setup.php">I have created it — try again</a></p>
+    </div>
+
+
+</main>
+</body>
+</html>
