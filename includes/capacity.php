@@ -10,6 +10,33 @@
 
 require_once __DIR__ . '/db.php';
 
+/**
+ * What one booking costs against the slot limit: one table, or its heads.
+ */
+function capacity_units(int $guests, ?string $mode = null): int
+{
+    $mode = $mode ?? ($GLOBALS['booking']['capacity_mode'] ?? 'tables');
+    return $mode === 'covers' ? max(1, $guests) : 1;
+}
+
+/**
+ * The SQL fragment that totals a slot, which depends on what we are counting.
+ */
+function capacity_sum_expression(?string $mode = null): string
+{
+    $mode = $mode ?? ($GLOBALS['booking']['capacity_mode'] ?? 'tables');
+    return $mode === 'covers' ? 'COALESCE(SUM(guests), 0)' : 'COUNT(*)';
+}
+
+function capacity_noun(?string $mode = null, int $n = 2): string
+{
+    $mode = $mode ?? ($GLOBALS['booking']['capacity_mode'] ?? 'tables');
+    if ($mode === 'covers') {
+        return $n === 1 ? 'seat' : 'seats';
+    }
+    return $n === 1 ? 'table' : 'tables';
+}
+
 class CapacityExceeded extends RuntimeException
 {
     public int $available;
@@ -31,7 +58,7 @@ function capacity_used(string $date, ?PDO $pdo = null, ?int $ignoreBookingId = n
     $pdo  = $pdo ?? db();
     $live = booking_live_statuses();
 
-    $sql = 'SELECT booking_time, SUM(guests) AS covers
+    $sql = 'SELECT booking_time, ' . capacity_sum_expression() . ' AS covers
               FROM bookings
              WHERE booking_date = ?
                AND status IN (' . implode(',', array_fill(0, count($live), '?')) . ')';
@@ -78,8 +105,9 @@ function capacity_slot_availability(string $date, array $times, int $max, int $g
     $used  = capacity_used($date);
     $avail = [];
 
+    $cost = capacity_units($guests);
     foreach ($times as $time) {
-        $avail[$time] = ((int) ($used[$time] ?? 0) + $guests) <= $max;
+        $avail[$time] = ((int) ($used[$time] ?? 0) + $cost) <= $max;
     }
 
     return $avail;
@@ -105,7 +133,7 @@ function capacity_assert_room(
     $pdo  = $pdo ?? db();
     $live = booking_live_statuses();
 
-    $sql = 'SELECT COALESCE(SUM(guests), 0) AS covers
+    $sql = 'SELECT ' . capacity_sum_expression() . ' AS covers
               FROM bookings
              WHERE booking_date = ? AND booking_time = ?
                AND status IN (' . implode(',', array_fill(0, count($live), '?')) . ')';
@@ -125,12 +153,13 @@ function capacity_assert_room(
 
     $used      = (int) $stmt->fetchColumn();
     $available = max(0, $max - $used);
+    $cost      = capacity_units($guests);
 
-    if ($used + $guests > $max) {
+    if ($used + $cost > $max) {
         throw new CapacityExceeded(
             $available === 0
                 ? 'That time is fully booked.'
-                : "That time only has room for $available more.",
+                : 'That time only has ' . $available . ' ' . capacity_noun(null, $available) . ' left.',
             $available
         );
     }

@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $rows    = bookings_for_date($date);
 $summary = bookings_day_summary($date);
-$max     = (int) ($booking['max_covers_per_slot'] ?? 0);
+$max     = (int) ($booking['max_per_slot'] ?? 0);
 $used    = capacity_used($date);
 $flash   = staff_flash();
 
@@ -80,7 +80,7 @@ staff_head($day->format('D j M'), 'day');
                 <?= e($time) ?>
                 <?php if ($max > 0): ?>
                     <span class="slot-cap <?= ($used[$time] ?? 0) >= $max ? 'full' : '' ?>">
-                        <?= (int) ($used[$time] ?? 0) ?>/<?= $max ?> covers
+                        <?= (int) ($used[$time] ?? 0) ?>/<?= $max ?> <?= e(capacity_noun(null, $max)) ?>
                     </span>
                 <?php endif; ?>
             </h2>

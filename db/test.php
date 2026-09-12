@@ -96,7 +96,7 @@ echo "Cilantro Café — booking data layer tests\n";
 echo str_repeat('=', 64) . "\n";
 
 $pdo = fresh_database();
-$GLOBALS['booking']['max_covers_per_slot'] = 20;
+$GLOBALS['booking']['max_per_slot'] = 20;
 
 // ---------------------------------------------------------------- phone keys
 
@@ -171,10 +171,11 @@ check('edit is audited',       str_contains(booking_history($id)[0]['action'], '
 
 // ---------------------------------------------------------------- capacity
 
-section('Capacity');
+section('Capacity — counting covers');
 
 $pdo = fresh_database();
-$GLOBALS['booking']['max_covers_per_slot'] = 20;
+$GLOBALS['booking']['capacity_mode'] = 'covers';
+$GLOBALS['booking']['max_per_slot']  = 20;
 
 booking_create([
     'name' => 'Party A', 'phone' => '0861000001', 'email' => 'a@example.com',
@@ -214,6 +215,49 @@ check('a cancellation frees its seats', capacity_remaining('2026-10-02', '13:00'
 $avail = capacity_slot_availability('2026-10-02', ['12:00', '13:00'], 20, 2);
 check('empty slot offered',  $avail['12:00'], true);
 check('full slot withheld',  $avail['13:00'], false);
+
+section('Capacity — counting tables (the café’s actual setting)');
+
+$pdo = fresh_database();
+$GLOBALS['booking']['capacity_mode'] = 'tables';
+$GLOBALS['booking']['max_per_slot']  = 15;
+
+// Fourteen parties, deliberately of wildly different sizes: in table mode the
+// sizes must not matter, only the number of bookings.
+for ($i = 1; $i <= 14; $i++) {
+    booking_create([
+        'name' => "Table $i", 'phone' => '08610001' . str_pad((string) $i, 2, '0', STR_PAD_LEFT),
+        'email' => "t$i@example.com",
+        'date' => '2026-10-05', 'time' => '13:00', 'guests' => ($i % 9) + 1,
+        'seating' => '', 'notes' => '',
+    ]);
+}
+
+check('bookings counted, not heads', capacity_used('2026-10-05')['13:00'], 14);
+check('one table left',              capacity_remaining('2026-10-05', '13:00', 15), 1);
+
+$last = booking_create([
+    'name' => 'Table 15', 'phone' => '0861000115', 'email' => 't15@example.com',
+    'date' => '2026-10-05', 'time' => '13:00', 'guests' => 9, 'seating' => '', 'notes' => '',
+]);
+check('a party of nine still takes just one table', $last > 0, true);
+check('now full', capacity_remaining('2026-10-05', '13:00', 15), 0);
+
+throws('the sixteenth is refused', CapacityExceeded::class, function () {
+    booking_create([
+        'name' => 'Table 16', 'phone' => '0861000116', 'email' => 't16@example.com',
+        'date' => '2026-10-05', 'time' => '13:00', 'guests' => 1, 'seating' => '', 'notes' => '',
+    ]);
+});
+
+check('a single diner costs one table', capacity_units(1), 1);
+check('a party of ten also costs one', capacity_units(10), 1);
+check('in covers mode a party of ten costs ten', capacity_units(10, 'covers'), 10);
+check('the noun follows the mode', capacity_noun('tables', 3), 'tables');
+check('and is singular for one',   capacity_noun('tables', 1), 'table');
+
+// Back to the default for whatever follows.
+$GLOBALS['booking']['capacity_mode'] = 'tables';
 
 // ---------------------------------------------------------------- GDPR
 

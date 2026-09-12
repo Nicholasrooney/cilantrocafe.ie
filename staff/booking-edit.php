@@ -22,7 +22,7 @@ if ($id && !$existing) {
     exit;
 }
 
-$max    = (int) ($booking['max_covers_per_slot'] ?? 0);
+$max    = (int) ($booking['max_per_slot'] ?? 0);
 $errors = [];
 $warn   = '';
 

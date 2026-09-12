@@ -58,7 +58,7 @@ function booking_create(array $data, bool $enforceCapacity = true, string $actor
 {
     global $booking;
 
-    $max = (int) ($booking['max_covers_per_slot'] ?? 0);
+    $max = (int) ($booking['max_per_slot'] ?? 0);
 
     return db_transaction(function (PDO $pdo) use ($data, $enforceCapacity, $actor, $max) {
         $guests = (int) $data['guests'];

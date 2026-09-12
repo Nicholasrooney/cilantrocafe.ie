@@ -65,13 +65,27 @@ $booking = [
     // The data folder is blocked from public access by data/.htaccess
     'csv_file'          => __DIR__ . '/../data/bookings.csv',
 
-    // Address that should receive booking notifications
-    'notify_email'      => '',
+    // Where booking alerts land. A gmail address is completely fine here —
+    // this is a recipient, not a sender.
+    'notify_email'      => 'nicholas.rooney2010@gmail.com',
 
-    // Most covers the café will take in one time slot. The public form stops
-    // taking bookings once a slot is full; staff can still override.
-    // Set this to the café's real figure.
-    'max_covers_per_slot' => 20,
+    /*
+     * How much the café can take in one time slot.
+     *
+     * 'tables' counts BOOKINGS — one booking, one table. With 15 tables, 15.
+     *          This is how most cafés think about it.
+     * 'covers' counts PEOPLE. Use this if you would rather cap total heads,
+     *          for example 50 covers regardless of how they are grouped.
+     *
+     * The trade-off with 'tables': a party of eight is counted as one table
+     * even though it probably takes two or three. If big groups start causing
+     * trouble, switch to 'covers'.
+     *
+     * The public form stops taking bookings once a slot is full. Staff can
+     * still override, and the override is recorded.
+     */
+    'capacity_mode' => 'tables',
+    'max_per_slot'  => 15,
 
     // Customer details are anonymised this many months after their last visit.
     'retention_months'    => 24,
@@ -118,9 +132,19 @@ $staff = [
  * Either way, set SPF and DKIM for the domain or confirmations go to spam.
  */
 $mail = [
-    'from'      => '',              // e.g. 'bookings@cilantrocafe.ie'
+    /*
+     * 'from' MUST be on this domain. A message claiming to come from a
+     * gmail.com address but sent through Hostinger fails SPF and gets binned
+     * or spam-filed — so the café's own address sends it, and replies are
+     * pointed at Nicholas's inbox instead.
+     *
+     * This address does not need a mailbox to send from. Create one at
+     * hPanel > Emails when you want to receive at it too, then fill in the
+     * smtp block below.
+     */
+    'from'      => 'bookings@cilantrocafe.ie',
     'from_name' => 'Cilantro Café',
-    'reply_to'  => '',              // defaults to 'from'
+    'reply_to'  => 'nicholas.rooney2010@gmail.com',
     'log_file'  => __DIR__ . '/../data/mail.log',
 
     'smtp' => [
