@@ -124,7 +124,10 @@ $mail = [
     'log_file'  => __DIR__ . '/../data/mail.log',
 
     'smtp' => [
-        'host'     => '',           // e.g. 'smtp.hostinger.com'
+        // Hostinger's outgoing mail server. Takes effect once 'user' below is
+        // filled in with the mailbox address and the password is set in
+        // includes/secrets/db.php.
+        'host'     => 'smtp.hostinger.com',
         'port'     => 587,
         'security' => 'tls',        // 'tls' (STARTTLS), 'ssl', or '' for none
         'user'     => '',           // the full email address
