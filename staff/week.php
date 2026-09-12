@@ -129,8 +129,8 @@ staff_head('Week of ' . $from->format('j M'), 'week', true);
         ?>
         <div class="tl-day <?= $isToday ? 'is-today' : '' ?> <?= $window ? '' : 'is-closed' ?>">
             <a class="tl-head" href="index.php?date=<?= e($key) ?>">
-                <span class="tl-dow"><?= e($day->format('D')) ?></span>
-                <span class="tl-date"><?= e($day->format('j M')) ?></span>
+                <span class="tl-dow"><?= e(strtoupper($day->format('D'))) ?></span>
+                <span class="tl-num"><?= e($day->format('j')) ?></span>
                 <span class="tl-covers">
                     <?= $window ? $covers . ' cover' . ($covers === 1 ? '' : 's') : 'Closed' ?>
                 </span>
@@ -158,6 +158,15 @@ staff_head('Week of ' . $from->format('j M'), 'week', true);
                     <span class="tl-shut" style="top:0; bottom:0"></span>
                 <?php endif; ?>
 
+                <?php
+                // The red line marking right now, the same cue Google uses.
+                if ($isToday) {
+                    $nowM = minutes_of((new DateTimeImmutable('now', $tz))->format('H:i'));
+                    if ($nowM >= $DAY_START && $nowM <= $DAY_END):
+                ?>
+                    <span class="tl-now" style="top: <?= round((($nowM - $DAY_START) / $SPAN) * 100, 3) ?>%"></span>
+                <?php endif; } ?>
+
                 <?php foreach ($dayRows as $b): ?>
                     <?php
                     $begin  = minutes_of($b['booking_time']);
@@ -182,9 +191,8 @@ staff_head('Week of ' . $from->format('j M'), 'week', true);
                               left: <?= round($left, 2) ?>%; width: <?= round($width, 2) ?>%;
                               z-index: <?= 5 + (int) $b['lane'] ?>;"
                        title="<?= e($b['booking_time'] . ' · ' . $b['name'] . ' · ' . $b['guests'] . ' guests · ' . booking_status_label($b['status'])) ?>">
-                        <span class="tl-bk-time"><?= e($b['booking_time']) ?></span>
                         <span class="tl-bk-name"><?= e($b['name']) ?></span>
-                        <span class="tl-bk-n"><?= (int) $b['guests'] ?></span>
+                        <span class="tl-bk-time"><?= e($b['booking_time']) ?> · <?= (int) $b['guests'] ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>

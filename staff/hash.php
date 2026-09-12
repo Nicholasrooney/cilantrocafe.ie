@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['password'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Make a staff password</title>
-<link rel="stylesheet" href="staff.css"></head>
+<link rel="stylesheet" href="<?= e(asset('staff/staff.css')) ?>"></head>
 <body><main class="wrap">
 <div class="card login">
 <h1>Set the café password</h1>

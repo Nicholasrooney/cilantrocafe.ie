@@ -44,6 +44,6 @@ require_once __DIR__ . '/cookie-banner.php';
 render_cookie_banner();
 ?>
 
-<script src="js/main.js" defer></script>
+<script src="<?= e(asset('js/main.js')) ?>" defer></script>
 </body>
 </html>

@@ -42,7 +42,7 @@ $hasLogo = file_exists(__DIR__ . '/../images/logo.png');
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Young+Serif&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset('css/style.css')) ?>">
     <?php seo_render_schema($pageSchema ?? []); ?>
 </head>
 <body class="page-<?= e($activePage) ?>">

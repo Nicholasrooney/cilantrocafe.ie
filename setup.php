@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $unlocked && !$alreadyConfigured) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Set up Cilantro Café</title>
-<link rel="stylesheet" href="staff/staff.css">
+<link rel="stylesheet" href="<?= e(asset('staff/staff.css')) ?>">
 <style>
   .wrap { max-width: 34rem; }
   .step { counter-increment: step; }

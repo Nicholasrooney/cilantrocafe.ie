@@ -218,3 +218,25 @@ foreach ([__DIR__ . '/../../private/secrets.php', __DIR__ . '/secrets/db.php'] a
 function e($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
+
+/**
+ * A stylesheet or script URL with a version stamp on it.
+ *
+ * .htaccess tells browsers to keep CSS and JS for a week, which is right for
+ * speed and wrong the moment we change one: returning visitors keep the old
+ * file until it expires. Stamping the modification time onto the URL makes an
+ * edited file a different URL, so it is fetched immediately and an unchanged
+ * one still comes from cache.
+ *
+ * Returns a ROOT-relative URL. It must be root-relative: a page at /staff/
+ * asking for 'staff/staff.css' would look for /staff/staff/staff.css.
+ *
+ * @param string $path  from the web root, e.g. 'css/style.css'
+ */
+function asset(string $path): string
+{
+    $path  = ltrim($path, '/');
+    $file  = __DIR__ . '/../' . $path;
+    $stamp = is_file($file) ? filemtime($file) : time();
+    return '/' . $path . '?v=' . $stamp;
+}

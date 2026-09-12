@@ -23,3 +23,14 @@
     if (new Date().toDateString() !== loadedOn) location.reload();
   }, 60000);
 })();
+
+// Anything marked data-confirm asks first. Cancelling is reversible — the
+// booking can be restored — so one plain confirm is the right weight: enough
+// to stop a mis-tap, not so much that staff avoid using it.
+(function () {
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-confirm]');
+    if (!btn) return;
+    if (!window.confirm(btn.dataset.confirm)) e.preventDefault();
+  });
+})();

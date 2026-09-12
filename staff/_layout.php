@@ -23,7 +23,7 @@ function staff_head(string $title, string $active = '', bool $wide = false): voi
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><?= e($title) ?> · Cilantro staff</title>
-<link rel="stylesheet" href="staff.css">
+<link rel="stylesheet" href="<?= e(asset('staff/staff.css')) ?>">
 </head>
 <body>
 <header class="bar">
@@ -43,7 +43,7 @@ function staff_foot(): void
 {
     ?>
 </main>
-<script src="staff.js" defer></script>
+<script src="<?= e(asset('staff/staff.js')) ?>" defer></script>
 </body>
 </html><?php
 }
