@@ -90,28 +90,51 @@ function cookieChoice(set) {
   }
 }
 
-// Map: never load Google until either the visitor taps it, or they have said
-// the map is welcome.
+// Map. It loads with the page now rather than waiting for a tap, so people see
+// where we are without doing anything. Google may set cookies when it loads, so
+// anyone who has actively chosen "Essential only" gets it taken back out and
+// replaced with a link — that keeps the cookie choice meaningful rather than
+// decorative.
 (function () {
-  var loader = document.querySelector('.map-load');
-  if (!loader) return;
+  var frame = document.querySelector('.map-frame');
+  if (!frame) return;
 
-  function loadMap() {
-    if (!loader.parentNode) return;
-    var frame = document.createElement('iframe');
-    frame.src = loader.dataset.embed;
-    frame.title = 'Map showing ' + loader.dataset.place;
-    frame.loading = 'lazy';
-    frame.referrerPolicy = 'no-referrer-when-downgrade';
-    frame.allowFullscreen = true;
-    frame.className = 'map-embed';
-    loader.parentNode.replaceChild(frame, loader);
+  function removeMap() {
+    var iframe = frame.querySelector('.map-embed');
+    if (!iframe) return;
+    iframe.remove();
+
+    var link = document.createElement('a');
+    link.className = 'map-declined';
+    link.href = frame.dataset.maps || '#';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.innerHTML =
+      '<span class="map-declined-title">Map hidden</span>' +
+      '<span class="map-declined-note">You chose essential cookies only. ' +
+      'Tap to open the map in Google Maps instead.</span>';
+    frame.appendChild(link);
   }
 
-  loader.addEventListener('click', loadMap);
-  document.addEventListener('cilantro:allow-map', loadMap);
+  function restoreMap() {
+    if (frame.querySelector('.map-embed')) return;
+    var declined = frame.querySelector('.map-declined');
+    if (declined) declined.remove();
 
-  if (cookieChoice() === 'all') loadMap();
+    var iframe = document.createElement('iframe');
+    iframe.className = 'map-embed';
+    iframe.src = frame.dataset.embed;
+    iframe.title = 'Map showing ' + frame.dataset.place;
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    iframe.allowFullscreen = true;
+    frame.appendChild(iframe);
+  }
+
+  if (cookieChoice() === 'essential') removeMap();
+
+  document.addEventListener('cilantro:allow-map', restoreMap);
+  document.addEventListener('cilantro:deny-map', removeMap);
 })();
 
 // Cookie banner
@@ -129,9 +152,9 @@ function cookieChoice(set) {
     cookieChoice(btn.dataset.cookie);
     banner.hidden = true;
 
-    if (btn.dataset.cookie === 'all') {
-      document.dispatchEvent(new CustomEvent('cilantro:allow-map'));
-    }
+    document.dispatchEvent(new CustomEvent(
+      btn.dataset.cookie === 'all' ? 'cilantro:allow-map' : 'cilantro:deny-map'
+    ));
   });
 })();
 

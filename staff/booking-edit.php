@@ -22,6 +22,45 @@ if ($id && !$existing) {
     exit;
 }
 
+/*
+ * The same customer-data controls as the customers screen, because this is
+ * where staff already are when somebody rings up asking what is held about
+ * them or to be forgotten. Handled before the booking form so an erase does
+ * not fall through into "save changes" on a booking that no longer exists.
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') !== '' && $existing) {
+    if (!staff_check_token($_POST['token'] ?? null)) {
+        staff_flash('That action expired. Try again.');
+        header('Location: booking-edit.php?id=' . $id, true, 303);
+        exit;
+    }
+
+    $customerId = (int) $existing['customer_id'];
+
+    if ($_POST['action'] === 'export') {
+        $data = customer_export($customerId);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="customer-' . $customerId . '.json"');
+        echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if ($_POST['action'] === 'erase' && ($_POST['confirm'] ?? '') === 'ERASE') {
+        $day = $existing['booking_date'];
+        customer_delete($customerId);
+        // This booking went with them, so there is nothing to come back to.
+        staff_flash('That customer and all of their bookings have been erased.');
+        header('Location: index.php?date=' . urlencode($day), true, 303);
+        exit;
+    }
+
+    if ($_POST['action'] === 'erase') {
+        staff_flash('Type ERASE exactly to confirm. Nothing was deleted.');
+        header('Location: booking-edit.php?id=' . $id, true, 303);
+        exit;
+    }
+}
+
 $max    = (int) ($booking['max_per_slot'] ?? 0);
 $errors = [];
 $warn   = '';
@@ -38,7 +77,7 @@ $form = [
     'source'  => $existing['source']       ?? 'phone',
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === '') {
     if (!staff_check_token($_POST['token'] ?? null)) {
         $errors['form'] = 'That form expired. Check the details and send it again.';
     }
@@ -100,8 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $history = $existing ? booking_history($id) : [];
+$flash   = staff_flash();
 staff_head($existing ? 'Edit booking' : 'Add booking');
 ?>
+
+<?php if ($flash): ?><p class="flash"><?= e($flash) ?></p><?php endif; ?>
 
 <form class="card form" method="post" action="booking-edit.php<?= $id ? '?id=' . $id : '' ?>">
     <input type="hidden" name="token" value="<?= e(staff_token()) ?>">
@@ -212,6 +254,28 @@ staff_head($existing ? 'Edit booking' : 'Add booking');
             <p class="bk-note bk-note-staff">★ <?= e($existing['customer_notes']) ?></p>
         <?php endif; ?>
         <a class="btn-s" href="customers.php?id=<?= (int) $existing['customer_id'] ?>">Open customer</a>
+    </div>
+
+    <div class="card danger">
+        <h2>Their data</h2>
+        <p class="sub">If <?= e($existing['name']) ?> asks what you hold about them, or asks
+           you to delete it, do it here.</p>
+
+        <form method="post" action="booking-edit.php?id=<?= $id ?>" class="inline">
+            <input type="hidden" name="token" value="<?= e(staff_token()) ?>">
+            <input type="hidden" name="action" value="export">
+            <button class="btn-s" type="submit">Download everything we hold</button>
+        </form>
+
+        <form method="post" action="booking-edit.php?id=<?= $id ?>" class="inline erase">
+            <input type="hidden" name="token" value="<?= e(staff_token()) ?>">
+            <input type="hidden" name="action" value="erase">
+            <label for="confirm">Type ERASE to confirm permanent deletion</label>
+            <p class="sub">This removes the customer <strong>and every booking they have
+               made</strong>, including this one. It cannot be undone.</p>
+            <input id="confirm" name="confirm" autocomplete="off" placeholder="ERASE">
+            <button class="btn-danger" type="submit">Erase this customer</button>
+        </form>
     </div>
 
     <div class="card">

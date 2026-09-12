@@ -8,9 +8,9 @@
  * Apple devices, so the button opens whichever app that person actually uses.
  * With JavaScript off everyone still gets a working Google link.
  *
- * The map itself is click-to-load. Embedding Google on page load would pull in
- * their cookies before the visitor has agreed to anything, which we do not want
- * on a site with no cookie banner.
+ * The map loads with the page. Google may set cookies when it does, so anyone
+ * who has chosen "Essential only" in the cookie notice gets it removed again by
+ * main.js — see that file for the reasoning.
  */
 
 /**
@@ -91,14 +91,15 @@ function render_map_section(array $site): void
                 <a class="text-link" href="<?= e($links['google']) ?>" target="_blank" rel="noopener">Open in Maps</a>
             </div>
 
-            <div class="map-frame">
-                <button type="button" class="map-load"
-                        data-embed="<?= e($links['embed']) ?>"
-                        data-place="<?= e($links['place']) ?>">
-                    <span class="map-load-title">Show the map</span>
-                    <span class="map-load-note"><?= e($links['label']) ?></span>
-                    <span class="map-load-small">Loads Google Maps when you tap</span>
-                </button>
+            <div class="map-frame" data-embed="<?= e($links['embed']) ?>"
+                 data-place="<?= e($links['place']) ?>"
+                 data-maps="<?= e($links['google']) ?>">
+                <iframe class="map-embed"
+                        src="<?= e($links['embed']) ?>"
+                        title="Map showing <?= e($links['place']) ?>"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen></iframe>
             </div>
         </div>
     </section>

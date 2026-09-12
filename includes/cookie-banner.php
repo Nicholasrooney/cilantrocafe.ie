@@ -7,9 +7,8 @@
  * consent. The only thing here that genuinely needs asking about is the Google
  * Maps embed, which is why the map does not load until someone asks for it.
  *
- * So this banner is not decoration: choosing "Accept all" is what lets the map
- * load on its own next time. Choosing "Essential only" keeps Google off the
- * page entirely.
+ * So this banner is not decoration: choosing "Essential only" removes the Google
+ * map from the page and replaces it with a plain link out.
  *
  * The choice is kept in localStorage rather than a cookie, so declining
  * cookies does not itself set one.
@@ -21,8 +20,8 @@ function render_cookie_banner(): void
         <div class="cookie-inner">
             <p class="cookie-text">
                 We use one cookie to keep the booking form working. Nothing tracks you
-                and there are no ads. Our map is loaded from Google only when you ask
-                for it — allow that here and it will load on its own next time.
+                and there are no ads. The map on our home page is loaded from Google,
+                who may set their own cookies — choose essential only and we will hide it.
                 <a href="privacy.php">Privacy notice</a>.
             </p>
             <div class="cookie-do">

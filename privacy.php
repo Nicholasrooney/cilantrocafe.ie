@@ -68,9 +68,10 @@ $updated = 'September 2026';
     <p>This site sets one cookie of its own, which keeps your booking form secure
        while you fill it in. It is deleted when you close your browser and it does
        not track you.</p>
-    <p>We do not use advertising or analytics cookies. If you choose to load the
-       map on our home page, Google may set cookies at that point — which is why
-       the map does not load until you ask it to.</p>
+    <p>We do not use advertising or analytics cookies. Our home page shows a map
+       loaded from Google, and Google may set their own cookies when it loads. If
+       you would rather that did not happen, choose "Essential only" in the cookie
+       notice and we will hide the map and show a plain link instead.</p>
 
     <h2>Your rights</h2>
     <p>Under GDPR you can ask us to:</p>

@@ -14,7 +14,7 @@ require_once __DIR__ . '/../includes/bookings.php';
 require_once __DIR__ . '/../includes/customers.php';
 require_once __DIR__ . '/../includes/capacity.php';
 
-function staff_head(string $title, string $active = ''): void
+function staff_head(string $title, string $active = '', bool $wide = false): void
 {
     ?><!DOCTYPE html>
 <html lang="en-IE">
@@ -35,7 +35,7 @@ function staff_head(string $title, string $active = ''): void
         <a href="logout.php" class="bar-out">Log out</a>
     </nav>
 </header>
-<main class="wrap">
+<main class="wrap<?= $wide ? ' wrap-wide' : '' ?>">
 <?php
 }
 
