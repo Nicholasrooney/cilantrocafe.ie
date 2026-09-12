@@ -26,3 +26,6 @@ data/*.sqlite
 
 # Scratch output from web lookups
 .firecrawl/
+
+# Scratch output from local testing
+/*.html
