@@ -1,0 +1,262 @@
+/* Cilantro Café — staff diary.
+   Built for a phone held in one hand behind a counter: large targets, high
+   contrast, no decoration that costs a tap. */
+
+:root {
+  --green: #0d5c46;
+  --green-deep: #073d2f;
+  --leaf: #a8d46f;
+  --ink: #16211c;
+  --muted: #5b6b63;
+  --line: #d6e0da;
+  --wall: #f3f6f2;
+  --white: #fff;
+  --warn: #8a5a00;
+  --warn-bg: #fdf4e0;
+  --bad: #a3261b;
+  --bad-bg: #fdeceb;
+  --ok: #146b4f;
+}
+
+* , *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--wall);
+  -webkit-text-size-adjust: 100%;
+}
+
+h1 { font-size: 1.6rem; margin: 0 0 0.35rem; }
+h2 { font-size: 1.15rem; margin: 0 0 0.6rem; }
+h3 { font-size: 1.05rem; margin: 0 0 0.2rem; }
+p  { margin: 0 0 0.75rem; }
+a  { color: var(--green); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ---------- top bar ---------- */
+
+.bar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+  padding: 0.7rem 1rem;
+  background: var(--green); color: var(--white);
+}
+.bar-brand { color: var(--white); font-weight: 700; text-decoration: none; font-size: 1.1rem; }
+.bar-brand span { font-weight: 400; opacity: 0.75; }
+.bar-nav { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.bar-nav a {
+  color: var(--white); text-decoration: none;
+  padding: 0.45rem 0.75rem; border-radius: 999px; font-size: 0.95rem;
+}
+.bar-nav a:hover { background: rgba(255,255,255,0.14); }
+.bar-nav a.on { background: var(--white); color: var(--green-deep); font-weight: 600; }
+.bar-out { opacity: 0.8; }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 1rem 1rem 4rem; }
+
+/* ---------- cards & messages ---------- */
+
+.card {
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: 12px; padding: 1.1rem; margin-bottom: 1rem;
+}
+.card.empty { text-align: center; padding: 2.5rem 1.25rem; }
+.card.danger { border-color: #e9c9c6; }
+.sub { color: var(--muted); font-size: 0.95rem; }
+.bad { color: var(--bad); }
+
+.flash {
+  background: #e6f4ed; border: 1px solid #bcdfcd; color: var(--ok);
+  padding: 0.7rem 1rem; border-radius: 10px; margin-bottom: 1rem;
+}
+.alert {
+  background: var(--bad-bg); border: 1px solid #f0c4c0; color: var(--bad);
+  padding: 0.7rem 1rem; border-radius: 10px;
+}
+.warn {
+  background: var(--warn-bg); border: 1px solid #edd9a8; color: var(--warn);
+  padding: 0.8rem 1rem; border-radius: 10px; margin-bottom: 1rem;
+}
+.warn p { margin-bottom: 0.5rem; }
+.notice ol { padding-left: 1.2rem; }
+
+/* ---------- buttons ---------- */
+
+.btn-p, .btn-s, .btn-danger {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 46px; padding: 0.6rem 1.1rem;
+  border: 1px solid transparent; border-radius: 10px;
+  font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.btn-p { background: var(--green); color: var(--white); }
+.btn-p:hover { background: var(--green-deep); }
+.btn-s { background: var(--white); color: var(--green); border-color: var(--line); }
+.btn-s:hover { border-color: var(--green); }
+.btn-danger { background: var(--bad); color: var(--white); }
+.btn-confirmed { border-color: var(--ok); color: var(--ok); }
+.btn-seated    { border-color: var(--green); }
+.btn-no_show   { border-color: #d8a49e; color: var(--bad); }
+.btn-cancelled { border-color: #d8a49e; color: var(--bad); }
+.btn-call      { border-color: var(--green); }
+
+:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
+
+/* ---------- day header ---------- */
+
+.dayhead {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.dayhead-mid { flex: 1; text-align: center; }
+.dayhead h1 { display: flex; flex-direction: column; line-height: 1.1; }
+.dayhead h1 span { font-size: 0.95rem; font-weight: 400; color: var(--muted); }
+.nav-arrow {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; flex: none;
+  background: var(--white); border: 1px solid var(--line); border-radius: 50%;
+  font-size: 1.6rem; text-decoration: none; color: var(--green);
+}
+.today-link { font-size: 0.9rem; }
+
+.totals {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.totals > div {
+  background: var(--white); border: 1px solid var(--line); border-radius: 10px;
+  padding: 0.5rem 0.9rem; display: flex; align-items: baseline; gap: 0.4rem;
+}
+.totals strong { font-size: 1.35rem; }
+.totals span { color: var(--muted); font-size: 0.9rem; }
+.btn-add { margin-left: auto; }
+
+/* ---------- slots & booking cards ---------- */
+
+.slot { margin-bottom: 1.5rem; }
+.slot-head {
+  display: flex; align-items: baseline; gap: 0.75rem;
+  padding-bottom: 0.4rem; margin-bottom: 0.6rem;
+  border-bottom: 2px solid var(--line);
+  font-size: 1.25rem;
+}
+.slot-cap { margin-left: auto; font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+.slot-cap.full { color: var(--bad); font-weight: 600; }
+
+.bk {
+  display: flex; gap: 0.9rem; align-items: flex-start;
+  background: var(--white); border: 1px solid var(--line);
+  border-left: 4px solid var(--green);
+  border-radius: 10px; padding: 0.85rem; margin-bottom: 0.5rem;
+}
+.bk-dead { opacity: 0.55; border-left-color: #c3ccc7; }
+.bk-requested { border-left-color: var(--warn); }
+.bk-seated    { border-left-color: var(--leaf); }
+.bk-completed { border-left-color: #c3ccc7; }
+
+.bk-when { text-align: center; flex: none; min-width: 56px; }
+.bk-time { display: block; font-weight: 700; font-size: 1.05rem; }
+.bk-guests {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; margin-top: 0.2rem; padding: 0.1rem 0.4rem;
+  background: var(--wall); border-radius: 999px;
+  font-size: 0.9rem; font-weight: 600;
+}
+.bk-who { flex: 1; min-width: 0; }
+.bk-meta { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.3rem; }
+.bk-note { font-size: 0.92rem; margin-bottom: 0.2rem; }
+.bk-note-staff { color: var(--warn); }
+.bk-do { display: flex; flex-direction: column; gap: 0.35rem; flex: none; }
+.bk-do .btn-s { min-height: 40px; padding: 0.4rem 0.8rem; font-size: 0.9rem; }
+
+.tag { font-weight: 600; }
+.tag-requested { color: var(--warn); }
+.tag-confirmed, .tag-seated { color: var(--ok); }
+.tag-no_show, .tag-cancelled { color: var(--bad); }
+
+.quick { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0 0 1rem 0.5rem; }
+.quick .btn-s { min-height: 42px; }
+
+/* ---------- week ---------- */
+
+.week { display: grid; gap: 0.6rem; }
+/* minmax(0,1fr) not 1fr: a plain 1fr track refuses to shrink below its
+   content, and one long customer name would push the whole week sideways. */
+@media (min-width: 720px) { .week { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.5rem; } }
+
+.week-day { min-width: 0; background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 0.6rem; }
+.week-day.is-today { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+.week-day-head { display: block; text-decoration: none; color: inherit; margin-bottom: 0.4rem; }
+.week-dow { font-weight: 700; }
+.week-date { color: var(--muted); font-size: 0.9rem; margin-left: 0.35rem; }
+.week-covers { display: block; font-size: 0.82rem; color: var(--muted); }
+.week-empty { color: var(--line); text-align: center; margin: 0; }
+
+.week-list { list-style: none; margin: 0; padding: 0; }
+.week-list li { border-top: 1px solid var(--line); }
+.week-list li.is-dead { opacity: 0.5; text-decoration: line-through; }
+.week-list a {
+  display: flex; gap: 0.5rem; align-items: baseline;
+  padding: 0.5rem 0.15rem; text-decoration: none; color: inherit;
+  font-size: 0.92rem; min-height: 44px;
+}
+.week-time { color: var(--muted); flex: none; }
+.week-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.week-n { font-weight: 700; flex: none; }
+
+/* ---------- forms ---------- */
+
+.form .row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.field { flex: 1 1 12rem; margin-bottom: 0.9rem; }
+.field-small { flex: 0 1 7rem; }
+label { display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.95rem; }
+.opt { font-weight: 400; color: var(--muted); }
+
+input[type=text], input[type=tel], input[type=email], input[type=password],
+input[type=date], input[type=number], input:not([type]), select, textarea {
+  width: 100%; padding: 0.7rem 0.8rem; min-height: 48px;
+  font: inherit; color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line); border-radius: 10px;
+}
+textarea { min-height: 84px; resize: vertical; }
+input:focus, select:focus, textarea:focus { border-color: var(--green); }
+.err { color: var(--bad); font-size: 0.88rem; margin: 0.25rem 0 0; }
+
+.check { display: flex; gap: 0.5rem; align-items: flex-start; font-weight: 400; }
+.check input { width: 22px; height: 22px; min-height: 0; flex: none; margin-top: 0.15rem; }
+
+.form-do { display: flex; gap: 0.6rem; align-items: center; margin-top: 0.5rem; }
+
+.searchbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.searchbar input { flex: 1; }
+
+.inline { display: inline-block; margin: 0 0.5rem 0.75rem 0; }
+.erase { display: block; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.erase input { max-width: 12rem; margin-bottom: 0.5rem; }
+
+.login { max-width: 26rem; margin: 3rem auto; }
+.hashout {
+  background: var(--wall); border: 1px solid var(--line); border-radius: 8px;
+  padding: 0.8rem; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ---------- audit ---------- */
+
+.audit { list-style: none; margin: 0; padding: 0; font-size: 0.9rem; }
+.audit li {
+  display: flex; gap: 0.6rem; flex-wrap: wrap;
+  padding: 0.45rem 0; border-top: 1px solid var(--line);
+}
+.audit-when { color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
+.audit-what { flex: 1; min-width: 8rem; }
+.audit-who { color: var(--muted); }

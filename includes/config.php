@@ -43,8 +43,72 @@ $booking = [
     // The data folder is blocked from public access by data/.htaccess
     'csv_file'          => __DIR__ . '/../data/bookings.csv',
 
-    // For later: address that should receive booking notifications
+    // Address that should receive booking notifications
     'notify_email'      => '',
+
+    // Most covers the café will take in one time slot. The public form stops
+    // taking bookings once a slot is full; staff can still override.
+    // Set this to the café's real figure.
+    'max_covers_per_slot' => 20,
+
+    // Customer details are anonymised this many months after their last visit.
+    'retention_months'    => 24,
+];
+
+/*
+ * Database. Create it in hPanel > Databases > MySQL Databases, then run
+ * db/schema.sql through phpMyAdmin. See docs/database-setup.md.
+ *
+ * Credentials belong in includes/secrets/db.php, which is gitignored — see the
+ * bottom of this file.
+ */
+$db = [
+    'driver'  => 'mysql',
+    'host'    => 'localhost',
+    'name'    => '',
+    'user'    => '',
+    'pass'    => '',
+    'charset' => 'utf8mb4',
+    'path'    => '',   // only used when driver is 'sqlite' (the test suite)
+];
+
+/*
+ * Staff area at /staff/.
+ *
+ * Generate the hash by visiting /staff/hash.php, then paste it here. Never put
+ * the plain password in this file.
+ */
+$staff = [
+    'password_hash'   => '',
+    'session_hours'   => 12,
+    'max_attempts'    => 5,
+    'lockout_minutes' => 15,
+];
+
+/*
+ * Outgoing email.
+ *
+ * Fill in 'from' with a mailbox on this domain — mail claiming to come from a
+ * gmail.com address will be treated as forged and binned.
+ *
+ * SMTP is strongly preferred over bare mail(): create the mailbox in hPanel >
+ * Emails, then put its details here. Leave smtp.host empty to use mail().
+ * Either way, set SPF and DKIM for the domain or confirmations go to spam.
+ */
+$mail = [
+    'from'      => '',              // e.g. 'bookings@cilantrocafe.ie'
+    'from_name' => 'Cilantro Café',
+    'reply_to'  => '',              // defaults to 'from'
+    'log_file'  => __DIR__ . '/../data/mail.log',
+
+    'smtp' => [
+        'host'     => '',           // e.g. 'smtp.hostinger.com'
+        'port'     => 587,
+        'security' => 'tls',        // 'tls' (STARTTLS), 'ssl', or '' for none
+        'user'     => '',           // the full email address
+        'pass'     => '',           // put this in includes/secrets/db.php
+        'timeout'  => 10,
+    ],
 ];
 
 /*
@@ -70,6 +134,28 @@ $calendar = [
     // page, then blank it again when you are finished.
     'test_token'       => '',
 ];
+
+/*
+ * Credentials live outside this file so they never reach Git.
+ *
+ * Preferred location is one level above public_html, where the web server
+ * cannot serve it at all. includes/secrets/db.php is the fallback; it is
+ * gitignored and blocked by .htaccess.
+ *
+ * The file just overrides what it needs, for example:
+ *
+ *     <?php
+ *     $db['name'] = 'u123_cilantro';
+ *     $db['user'] = 'u123_cilantro';
+ *     $db['pass'] = '...';
+ *     $staff['password_hash'] = '$2y$...';
+ */
+foreach ([__DIR__ . '/../../private/secrets.php', __DIR__ . '/secrets/db.php'] as $secretsFile) {
+    if (is_readable($secretsFile)) {
+        require $secretsFile;
+        break;
+    }
+}
 
 function e($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');

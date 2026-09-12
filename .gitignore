@@ -12,10 +12,17 @@ desktop.ini
 # Staging folder for source photos/menu scans — not site content
 Extras/
 
-# Credentials — never commit
-includes/secrets/*.json
+# Credentials — never commit.
+# Deny the whole secrets folder, then allow back only the two files that are
+# meant to be in the repo. Safer than listing extensions: a new secret dropped
+# in here is ignored by default rather than committed by accident.
+includes/secrets/*
+!includes/secrets/.htaccess
+!includes/secrets/README.md
+
 data/.google-token.json
 data/*.log
+data/*.sqlite
 
 # Scratch output from web lookups
 .firecrawl/

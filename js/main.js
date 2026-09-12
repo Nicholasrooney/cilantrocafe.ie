@@ -77,12 +77,27 @@
   if (isApple) btn.href = btn.dataset.apple;
 })();
 
-// Map: don't load Google until the visitor asks for it
+// Cookie choice. Stored in localStorage rather than a cookie, so saying no to
+// cookies doesn't ironically set one. Returns 'all', 'essential' or null.
+function cookieChoice(set) {
+  try {
+    if (set) { localStorage.setItem('cilantro-cookies', set); return set; }
+    return localStorage.getItem('cilantro-cookies');
+  } catch (e) {
+    // Private browsing, or storage blocked. Treat as "not decided" and never
+    // assume consent.
+    return null;
+  }
+}
+
+// Map: never load Google until either the visitor taps it, or they have said
+// the map is welcome.
 (function () {
   var loader = document.querySelector('.map-load');
   if (!loader) return;
 
-  loader.addEventListener('click', function () {
+  function loadMap() {
+    if (!loader.parentNode) return;
     var frame = document.createElement('iframe');
     frame.src = loader.dataset.embed;
     frame.title = 'Map showing ' + loader.dataset.place;
@@ -91,5 +106,80 @@
     frame.allowFullscreen = true;
     frame.className = 'map-embed';
     loader.parentNode.replaceChild(frame, loader);
+  }
+
+  loader.addEventListener('click', loadMap);
+  document.addEventListener('cilantro:allow-map', loadMap);
+
+  if (cookieChoice() === 'all') loadMap();
+})();
+
+// Cookie banner
+(function () {
+  var banner = document.getElementById('cookie-banner');
+  if (!banner) return;
+
+  if (cookieChoice()) return;   // already answered
+  banner.hidden = false;
+
+  banner.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-cookie]');
+    if (!btn) return;
+
+    cookieChoice(btn.dataset.cookie);
+    banner.hidden = true;
+
+    if (btn.dataset.cookie === 'all') {
+      document.dispatchEvent(new CustomEvent('cilantro:allow-map'));
+    }
   });
+})();
+
+// Booking form: refresh the time slots when the date or party size changes, so
+// a full sitting is greyed out before somebody fills in the whole form and gets
+// turned away at the end.
+(function () {
+  var form = document.querySelector('.booking-form');
+  if (!form) return;
+
+  var date   = form.querySelector('#date');
+  var time   = form.querySelector('#time');
+  var guests = form.querySelector('#guests');
+  if (!date || !time) return;
+
+  var inFlight = null;
+
+  function refresh() {
+    if (!date.value) return;
+
+    var url = 'slots.php?date=' + encodeURIComponent(date.value) +
+              '&guests=' + encodeURIComponent(guests ? guests.value : 1);
+
+    if (inFlight) inFlight.abort();
+    inFlight = new AbortController();
+
+    fetch(url, { signal: inFlight.signal })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.slots) return;
+
+        var chosen = time.value;
+        Array.prototype.forEach.call(time.options, function (opt) {
+          if (!opt.value) return;
+          var free = data.slots[opt.value];
+          opt.disabled = free === false;
+          opt.textContent = opt.value + (free === false ? ' — fully booked' : '');
+        });
+
+        // If their chosen time just became unavailable, clear it rather than
+        // submitting something that will be rejected.
+        if (chosen && time.selectedOptions[0] && time.selectedOptions[0].disabled) {
+          time.value = '';
+        }
+      })
+      .catch(function () { /* offline or aborted: leave the form as it is */ });
+  }
+
+  date.addEventListener('change', refresh);
+  if (guests) guests.addEventListener('change', refresh);
 })();

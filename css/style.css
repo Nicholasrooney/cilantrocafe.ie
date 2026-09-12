@@ -658,3 +658,62 @@ a:hover { color: var(--fascia-deep); }
 }
 .map-load-note { font-weight: 500; max-width: 28rem; }
 .map-load-small { font-size: 0.875rem; color: var(--muted); }
+
+/* ---------- Cookie notice ---------- */
+
+.cookie {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 60;
+  background: var(--fascia-deep);
+  color: var(--white);
+  border-top: 3px solid var(--leaf);
+}
+.cookie[hidden] { display: none !important; }
+.cookie-inner {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 1rem var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.cookie-text {
+  flex: 1 1 22rem;
+  margin: 0;
+  max-width: none;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.cookie-text a { color: var(--leaf); }
+.cookie-do { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.cookie-do .btn { padding: 0.6rem 1.1rem; }
+
+@media (max-width: 560px) {
+  .cookie-do { width: 100%; }
+  .cookie-do .btn { flex: 1; }
+}
+
+/* ---------- Privacy / long-form text ---------- */
+
+.prose { max-width: 46rem; padding-bottom: 3rem; }
+.prose h2 { margin-top: 2rem; }
+.prose ul { padding-left: 1.2rem; }
+.prose li { margin-bottom: 0.35rem; }
+
+/* ---------- Booking consent ---------- */
+
+.consent { margin: 1.25rem 0; }
+.consent-label {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.consent-label input {
+  width: 22px; height: 22px;
+  margin-top: 0.15rem;
+  flex: none;
+}

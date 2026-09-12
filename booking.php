@@ -14,6 +14,11 @@ function field_error(array $errors, string $field): string {
 function error_attrs(array $errors, string $field): string {
     return isset($errors[$field]) ? ' aria-invalid="true" aria-describedby="' . e($field) . '-error"' : '';
 }
+
+// Which slots still have room on the date being shown. Advisory only — the
+// binding check happens inside the insert transaction.
+$shownDate = $old['date'] !== '' ? $old['date'] : $today->format('Y-m-d');
+$slots     = booking_slot_availability($shownDate, (int) $old['guests']);
 ?>
 
 <div class="container booking-layout">
@@ -72,7 +77,10 @@ function error_attrs(array $errors, string $field): string {
                             <select id="time" name="time" required<?= error_attrs($errors, 'time') ?>>
                                 <option value="">Choose a time</option>
                                 <?php foreach ($booking['times'] as $t): ?>
-                                    <option value="<?= e($t) ?>" <?= $old['time'] === $t ? 'selected' : '' ?>><?= e($t) ?></option>
+                                    <?php $free = $slots[$t] ?? true; ?>
+                                    <option value="<?= e($t) ?>"
+                                            <?= $old['time'] === $t ? 'selected' : '' ?>
+                                            <?= $free ? '' : 'disabled' ?>><?= e($t) ?><?= $free ? '' : ' — fully booked' ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <?= field_error($errors, 'time') ?>
@@ -129,7 +137,18 @@ function error_attrs(array $errors, string $field): string {
                     </div>
                 </fieldset>
 
-                <p class="privacy-note">We only use your details to manage this booking.</p>
+                <div class="field consent">
+                    <label class="consent-label" for="marketing_consent">
+                        <input type="checkbox" id="marketing_consent" name="marketing_consent" value="1"
+                               <?= $consent ? 'checked' : '' ?>>
+                        <span>Email me now and then about offers and events at Cilantro Café. Optional — your table is booked either way, and you can stop any time.</span>
+                    </label>
+                </div>
+
+                <p class="privacy-note">
+                    We use your details to manage this booking and nothing else.
+                    See our <a href="privacy.php">privacy notice</a>.
+                </p>
                 <button class="btn btn-green btn-block" type="submit">Request booking</button>
             </form>
         <?php endif; ?>

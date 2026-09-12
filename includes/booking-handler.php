@@ -1,15 +1,17 @@
 <?php
 /*
- * Booking form handler.
+ * Public booking form: validation, then hand off to the data layer.
  *
- * Current behaviour: validates the form and saves each booking request as a
- * row in data/bookings.csv (not publicly accessible).
- *
- * BACKEND TODO: when you're ready, replace or add to save_booking() below to
- * send an email notification, write to a database, or post to a booking tool.
+ * This file's only job is turning an untrusted POST into either a list of
+ * errors or one clean booking. Storage lives in bookings.php, capacity in
+ * capacity.php, email in mailer.php.
  */
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/bookings.php';
+require_once __DIR__ . '/capacity.php';
+require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/calendar-sync.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -25,11 +27,12 @@ if (empty($_SESSION['booking_token'])) {
     $_SESSION['booking_token'] = bin2hex(random_bytes(16));
 }
 
-$errors  = [];
-$old     = [
+$errors = [];
+$old    = [
     'name' => '', 'phone' => '', 'email' => '', 'date' => '',
     'time' => '', 'guests' => '2', 'seating' => $booking['seating'][0], 'notes' => '',
 ];
+$consent   = false;
 $confirmed = $_SESSION['booking_confirmed'] ?? null;
 unset($_SESSION['booking_confirmed']);
 
@@ -40,9 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($old as $field => $default) {
         $old[$field] = trim((string) ($_POST[$field] ?? ''));
     }
+    $consent = !empty($_POST['marketing_consent']);
 
     // Spam checks: hidden field must stay empty, token must match
-    $isBot = !empty($_POST['website']);
+    $isBot   = !empty($_POST['website']);
     $tokenOk = hash_equals($_SESSION['booking_token'], (string) ($_POST['token'] ?? ''));
 
     if (!$tokenOk) {
@@ -91,29 +95,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['notes'] = 'Keep notes under 500 characters.';
     }
 
-    if (!$errors) {
-        if (!$isBot) {
-            $saved = save_booking($old, $booking);
-            if (!$saved) {
-                $errors['form'] = 'Your booking could not be saved. Please phone or email us instead.';
-            } else {
-                // Mirror it onto the Google Calendar. Returns null and logs if
-                // sync is off or Google is unreachable; the booking still stands.
-                calendar_sync_booking($old, $calendar);
-            }
-        }
+    if (!$errors && !$isBot) {
+        try {
+            $bookingId = booking_create([
+                'name'              => $old['name'],
+                'phone'             => $old['phone'],
+                'email'             => $old['email'],
+                'date'              => $old['date'],
+                'time'              => $old['time'],
+                'guests'            => $guests,
+                'seating'           => $old['seating'],
+                'notes'             => $old['notes'],
+                'source'            => 'website',
+                'marketing_consent' => $consent,
+            ], true, 'website');
 
-        if (!$errors) {
-            $_SESSION['booking_confirmed'] = [
-                'name'   => $old['name'],
-                'date'   => $date->format('l j F'),
-                'time'   => $old['time'],
-                'guests' => (int) $guests,
-            ];
-            $_SESSION['booking_token'] = bin2hex(random_bytes(16));
-            header('Location: booking.php?sent=1', true, 303);
-            exit;
+            // Everything below is a nice-to-have. None of it may undo a
+            // booking that is already saved, so each part fails on its own.
+            $row = ['name' => $old['name'], 'phone' => $old['phone'], 'email' => $old['email'],
+                    'date' => $old['date'], 'time' => $old['time'], 'guests' => $guests,
+                    'seating' => $old['seating'], 'notes' => $old['notes']];
+
+            $eventId = calendar_sync_booking($row, $calendar);
+            if ($eventId) {
+                booking_set_google_event($bookingId, $eventId);
+            }
+
+            mail_booking_confirmation($row);
+            mail_booking_alert($row);
+
+        } catch (CapacityExceeded $e) {
+            $errors['time'] = $e->getMessage() . ' Please pick another time.';
+        } catch (Throwable $e) {
+            error_log('Booking failed: ' . $e->getMessage());
+            $errors['form'] = 'Your booking could not be saved. Please phone or email us instead.';
         }
+    }
+
+    if (!$errors) {
+        $_SESSION['booking_confirmed'] = [
+            'name'   => $old['name'],
+            'date'   => $date->format('l j F'),
+            'time'   => $old['time'],
+            'guests' => (int) $guests,
+        ];
+        $_SESSION['booking_token'] = bin2hex(random_bytes(16));
+        header('Location: booking.php?sent=1', true, 303);
+        exit;
+    }
+}
+
+/**
+ * Which time slots still have room, for the date being shown.
+ *
+ * This only decides what the form offers. The binding check happens inside the
+ * insert transaction, because two people can pass this one in the same second.
+ */
+function booking_slot_availability(string $date, int $guests): array
+{
+    global $booking;
+
+    try {
+        return capacity_slot_availability(
+            $date,
+            $booking['times'],
+            (int) ($booking['max_covers_per_slot'] ?? 0),
+            max(1, $guests)
+        );
+    } catch (Throwable $e) {
+        // No database yet? Offer everything rather than showing an empty form.
+        return array_fill_keys($booking['times'], true);
     }
 }
 
@@ -123,45 +174,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function text_length(string $value): int
 {
     return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : (int) preg_match_all('/./us', $value);
-}
-
-/**
- * Saves one booking request. Returns true on success.
- */
-function save_booking(array $data, array $booking): bool
-{
-    $file = $booking['csv_file'];
-    $dir  = dirname($file);
-
-    if (!is_dir($dir) && !mkdir($dir, 0750, true)) {
-        return false;
-    }
-
-    $isNew  = !file_exists($file);
-    $handle = fopen($file, 'ab');
-    if (!$handle) {
-        return false;
-    }
-
-    // Stop spreadsheet apps treating values as formulas
-    $safe = static function ($value) {
-        $value = (string) $value;
-        return preg_match('/^[=+\-@\t\r]/', $value) ? "'" . $value : $value;
-    };
-
-    flock($handle, LOCK_EX);
-    if ($isNew) {
-        fputcsv($handle, ['Received', 'Name', 'Phone', 'Email', 'Date', 'Time', 'Guests', 'Seating', 'Notes']);
-    }
-    $received = (new DateTimeImmutable('now', new DateTimeZone('Europe/Dublin')))->format('Y-m-d H:i');
-    fputcsv($handle, array_map($safe, [
-        $received, $data['name'], $data['phone'], $data['email'],
-        $data['date'], $data['time'], $data['guests'], $data['seating'], $data['notes'],
-    ]));
-    flock($handle, LOCK_UN);
-    fclose($handle);
-
-    // BACKEND TODO: send notification email to $booking['notify_email']
-
-    return true;
 }

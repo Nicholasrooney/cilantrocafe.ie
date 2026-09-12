@@ -33,8 +33,16 @@
             </div>
         <?php endif; ?>
     </div>
-    <p class="footer-legal">&copy; <?= date('Y') ?> <?= e($site['name']) ?></p>
+    <p class="footer-legal">
+        &copy; <?= date('Y') ?> <?= e($site['name']) ?>
+        · <a href="privacy.php">Privacy</a>
+    </p>
 </footer>
+
+<?php
+require_once __DIR__ . '/cookie-banner.php';
+render_cookie_banner();
+?>
 
 <script src="js/main.js" defer></script>
 </body>
