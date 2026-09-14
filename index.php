@@ -60,7 +60,9 @@ $featured = [
                     <a href="menu.php">
                         <img src="images/<?= e($dish['img']) ?>" alt="<?= e($dish['alt']) ?>" loading="lazy">
                         <span class="dish-name"><?= e($dish['name']) ?></span>
-                        <span class="dish-price">€<?= e($dish['price']) ?></span>
+                        <?php if (show_prices()): ?>
+                            <span class="dish-price">€<?= e($dish['price']) ?></span>
+                        <?php endif; ?>
                     </a>
                 </li>
             <?php endforeach; ?>
@@ -83,9 +85,9 @@ $featured = [
     <div class="container catering-teaser-inner">
         <div>
             <h2 id="catering-teaser-title">Catering for <?= (int) $catering['min_guests'] ?> to <?= (int) $catering['max_guests'] ?></h2>
-            <p>Taco bars, torta platters and brunch spreads for offices, parties and weddings. Priced from our menu, collected or delivered.</p>
+            <p>Taco bars, torta platters and brunch spreads for offices, parties and weddings. Food straight from our café menu, collected or delivered.</p>
         </div>
-        <a class="btn btn-light" href="event-catering.php">See catering prices</a>
+        <a class="btn btn-light" href="event-catering.php">Get a catering quote</a>
     </div>
 </section>
 

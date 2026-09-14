@@ -1039,3 +1039,6 @@ a:hover { color: var(--fascia-deep); }
 .catering-teaser-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2rem; }
 .catering-teaser h2 { color: var(--white); margin-bottom: 0.35rem; }
 .catering-teaser p { color: rgba(255, 255, 255, 0.85); margin: 0; }
+
+/* Location box on the catering price card: full width, outside the phone/email row. */
+.pc-location { display: block; width: 100%; }

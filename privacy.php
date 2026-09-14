@@ -42,9 +42,9 @@ $updated = 'September 2026';
 
     <h2>When you ask about catering</h2>
     <p>If you use our catering page, we keep what you send us: your phone number
-       or email, and — if you use the full form — your name, the occasion, date,
-       numbers, package, whether you want pickup or delivery, a delivery address
-       and any notes. We also note the starting price you were shown.</p>
+       or email, where the event is, and — if you use the full form — your name,
+       the occasion, date, numbers, package, whether you want pickup or delivery,
+       a delivery address and any notes.</p>
     <p>We use it only to answer your enquiry and, if you go ahead, to arrange the
        catering. Enquiries that go quiet are deleted <?= (int) ($booking['retention_months'] ?? 24) ?> months
        after they were last updated.</p>

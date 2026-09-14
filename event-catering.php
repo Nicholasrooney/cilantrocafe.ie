@@ -2,7 +2,7 @@
 require __DIR__ . '/includes/catering-handler.php';
 
 $pageTitle       = 'Event Catering Dublin | Mexican Catering in Blackrock | Cilantro Café';
-$pageDescription = 'Mexican event catering from Cilantro Café in Blackrock, Dublin. Taco bars, torta platters, brunch spreads and more for 20 to 200 guests. Get your price in seconds — pickup or delivery.';
+$pageDescription = 'Mexican event catering from Cilantro Café in Blackrock, Dublin. Taco bars, torta platters, brunch spreads and more for 20 to 200 guests. Get a quote in seconds — pickup or delivery.';
 $pageKeywords    = 'event catering Dublin, Mexican catering Dublin, catering Blackrock, taco bar catering, office lunch catering Dublin, party catering south Dublin, wedding catering Dublin';
 $activePage      = 'catering';
 $pageImage       = 'images/tacos-sharing.jpg';
@@ -15,18 +15,18 @@ $cat_faq = [
     'Do you deliver, or do I collect?' =>
         'Either. You can pick your order up from the café at Newpark Centre, Blackrock, or we can deliver. Tell us where when you enquire and we will confirm delivery when we send your price.',
     'How is the price worked out?' =>
-        'The starting price per person comes straight from our café menu, so it is the same food at the same price. Your exact price depends on the dishes you choose, your numbers and any extras, and we confirm it before anything is booked.',
+        'It depends on the dishes you choose, how many guests you have and any extras. Tell us about your event and we will send you a quote before anything is booked.',
     'Can you cater for allergies and dietary needs?' =>
         'Every dish on our menu is labelled with its allergens, and there are vegetarian options such as mushroom tacos, mushroom tortas and mushroom enchiladas. Tell us about any dietary needs in the enquiry form.',
     'How much notice do you need?' =>
         'Tell us your date when you enquire and we will let you know straight away whether we can do it.',
     'Can I see the full menu first?' =>
-        'Yes — the full café menu, with prices and allergens, is on our menu page.',
+        'Yes — the full café menu, with allergens on every dish, is on our menu page.',
 ];
 
 $cat_offers = [];
 foreach ($cat_packages as $pkg) {
-    if ($pkg['price'] === null) {
+    if ($pkg['price'] === null || !show_prices()) {
         continue;
     }
     $cat_offers[] = [
@@ -51,12 +51,11 @@ $pageSchema = [
         'description' => 'Mexican catering for 20 to 200 guests, from the Cilantro Café menu. Pickup from Blackrock or delivery.',
         'provider'    => ['@id' => seo_base_url() . '/#restaurant'],
         'areaServed'  => ['Blackrock', 'Dún Laoghaire', 'Dublin'],
-        'hasOfferCatalog' => [
-            '@type'           => 'OfferCatalog',
-            'name'            => 'Catering packages',
-            'itemListElement' => $cat_offers,
-        ],
-    ],
+    ] + ($cat_offers ? ['hasOfferCatalog' => [
+        '@type'           => 'OfferCatalog',
+        'name'            => 'Catering packages',
+        'itemListElement' => $cat_offers,
+    ]] : []),
     seo_faq($cat_faq),
     seo_breadcrumbs(['Event Catering' => 'event-catering.php']),
 ];
@@ -91,7 +90,7 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
             <ul class="catering-proof">
                 <li><strong><?= (int) $catering['min_guests'] ?>–<?= (int) $catering['max_guests'] ?></strong> guests</li>
                 <li><strong>Pickup</strong> or delivery</li>
-                <li><strong>Priced</strong> from our menu</li>
+                <li><strong>Straight</strong> from our café menu</li>
             </ul>
             <a class="catering-textlink" href="#quote">Rather tell us everything? Use the full enquiry form &darr;</a>
         </div>
@@ -105,7 +104,7 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
             </div>
 
             <div class="pc-head">
-                <h2 class="pc-title">Get your price</h2>
+                <h2 class="pc-title">Get a catering quote</h2>
                 <p class="pc-sub">Pick your occasion, then slide for guest numbers</p>
             </div>
 
@@ -136,11 +135,21 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
             </div>
 
             <div class="pc-block">
-                <label class="pc-step" for="pc-package"><span class="pc-step-num">3</span> Your package</label>
+                <label class="pc-step" for="pc-location"><span class="pc-step-num">3</span> Where's the event?</label>
+                <input class="pc-input pc-location" type="text" id="pc-location" name="location" maxlength="200"
+                       value="<?= e($cat_card['location']) ?>" placeholder="Town, area or venue — e.g. Blackrock"
+                       autocomplete="address-level2"<?= isset($cat_errors['location']) ? ' aria-invalid="true" aria-describedby="location-error"' : '' ?>>
+                <?php if (isset($cat_errors['location'])): ?>
+                    <p class="pc-error field-error" id="location-error"><?= e($cat_errors['location']) ?></p>
+                <?php endif; ?>
+            </div>
+
+            <div class="pc-block">
+                <label class="pc-step" for="pc-package"><span class="pc-step-num">4</span> Your package</label>
                 <select class="pc-select" id="pc-package" name="package">
                     <?php foreach ($cat_packages as $key => $pkg): ?>
                         <option value="<?= e($key) ?>"
-                                data-price="<?= $pkg['price'] === null ? '' : e(number_format($pkg['price'], 2, '.', '')) ?>"
+                                <?php if (show_prices() && $pkg['price'] !== null): ?>data-price="<?= e(number_format($pkg['price'], 2, '.', '')) ?>"<?php endif; ?>
                                 data-includes="<?= e($pkg['includes']) ?>"
                                 <?= $cat_card['package'] === $key ? 'selected' : '' ?>><?= e($pkg['name']) ?></option>
                     <?php endforeach; ?>
@@ -148,19 +157,24 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
             </div>
 
             <div class="pc-result" aria-live="polite">
-                <span class="pc-result-label">Starting price</span>
-                <span class="pc-price" data-pc-price>
-                    <?php if ($cardPrice === null): ?>
-                        Price on request
-                    <?php else: ?>
-                        <?= e(catering_money($cardPrice)) ?> <small>per person</small>
-                    <?php endif; ?>
-                </span>
-                <span class="pc-total" data-pc-total>
-                    <?php if ($cardTotal !== null): ?>
-                        around <?= e(catering_money((float) $cardTotal, false)) ?> for <?= (int) $cat_card['guests'] ?> guests
-                    <?php endif; ?>
-                </span>
+                <?php if (show_prices()): ?>
+                    <span class="pc-result-label">Starting price</span>
+                    <span class="pc-price" data-pc-price>
+                        <?php if ($cardPrice === null): ?>
+                            Price on request
+                        <?php else: ?>
+                            <?= e(catering_money($cardPrice)) ?> <small>per person</small>
+                        <?php endif; ?>
+                    </span>
+                    <span class="pc-total" data-pc-total>
+                        <?php if ($cardTotal !== null): ?>
+                            around <?= e(catering_money((float) $cardTotal, false)) ?> for <?= (int) $cat_card['guests'] ?> guests
+                        <?php endif; ?>
+                    </span>
+                <?php else: ?>
+                    <span class="pc-result-label">Your package</span>
+                    <span class="pc-price" data-pc-name><?= e($cardPackage['name']) ?></span>
+                <?php endif; ?>
                 <span class="pc-includes" data-pc-includes><?= e($cardPackage['includes']) ?></span>
             </div>
 
@@ -174,24 +188,24 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                          data-occasion="<?= e($cat_sent['occasion']) ?>">
                         <span class="pc-success-icon" aria-hidden="true">&#10003;</span>
                         <h3>Got it — thanks!</h3>
-                        <p>We'll come back to you with an exact price for your event.</p>
+                        <p>We'll come back to you with a quote for your event.</p>
                     </div>
                 <?php else: ?>
                     <?php if (isset($cat_errors['form_price_card'])): ?>
                         <p class="pc-error" role="alert"><?= e($cat_errors['form_price_card']) ?></p>
                     <?php endif; ?>
-                    <label class="pc-prompt" for="pc-contact">Want the exact price? Leave a phone number or email.</label>
+                    <label class="pc-prompt" for="pc-contact">Want a quote? Leave a phone number or email.</label>
                     <div class="pc-form-row">
                         <input class="pc-input" type="text" id="pc-contact" name="contact"
                                value="<?= e($cat_card['contact']) ?>" placeholder="Phone number or email"
                                autocomplete="off" inputmode="email"
                                <?= isset($cat_errors['contact']) ? 'aria-invalid="true" aria-describedby="contact-error"' : '' ?>>
-                        <button class="btn btn-green pc-submit" type="submit">Get my price</button>
+                        <button class="btn btn-green pc-submit" type="submit">Get my quote</button>
                     </div>
                     <?php if (isset($cat_errors['contact'])): ?>
                         <p class="pc-error field-error" id="contact-error"><?= e($cat_errors['contact']) ?></p>
                     <?php endif; ?>
-                    <p class="pc-reassure">Priced from our café menu · no obligation · <a href="privacy.php">privacy</a></p>
+                    <p class="pc-reassure">No obligation · <a href="privacy.php">privacy</a></p>
                 <?php endif; ?>
             </div>
         </form>
@@ -205,12 +219,12 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
             <li>
                 <span class="catering-step-num">1</span>
                 <h3>Tell us about your event</h3>
-                <p>Get your price above, or fill in the full form below with your date, numbers and what you fancy.</p>
+                <p>Use the quote box above, or fill in the full form below with your date, numbers and what you fancy.</p>
             </li>
             <li>
                 <span class="catering-step-num">2</span>
-                <h3>We confirm your menu and price</h3>
-                <p>We come back to you with an exact price, based on the same dishes and prices as our café menu.</p>
+                <h3>We send you a quote</h3>
+                <p>We come back to you with a quote for your event, using the same dishes as our café menu.</p>
             </li>
             <li>
                 <span class="catering-step-num">3</span>
@@ -232,19 +246,23 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                 <li class="package-card">
                     <h3><?= e($pkg['name']) ?></h3>
                     <p class="package-includes"><?= e($pkg['includes']) ?></p>
-                    <p class="package-price">
-                        <?php if ($pkg['price'] === null): ?>
-                            Price on request
-                        <?php else: ?>
-                            From <strong><?= e(catering_money($pkg['price'])) ?></strong> per person
-                        <?php endif; ?>
-                    </p>
+                    <?php if (show_prices()): ?>
+                        <p class="package-price">
+                            <?php if ($pkg['price'] === null): ?>
+                                Price on request
+                            <?php else: ?>
+                                From <strong><?= e(catering_money($pkg['price'])) ?></strong> per person
+                            <?php endif; ?>
+                        </p>
+                    <?php endif; ?>
                     <a class="btn btn-green" href="#price" data-price-package="<?= e($key) ?>"
-                       data-track="catering_price_this_package" data-track-label="<?= e($key) ?>">Price this package</a>
+                       data-track="catering_choose_package" data-track-label="<?= e($key) ?>">Choose this package</a>
                 </li>
             <?php endforeach; ?>
         </ul>
-        <p class="package-note">Starting prices per person, taken from our café menu. Drinks, sides and extras are added to your exact price.</p>
+        <?php if (show_prices()): ?>
+            <p class="package-note">Starting prices per person, taken from our café menu. Drinks, sides and extras are added to your exact price.</p>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -279,10 +297,10 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
     <div class="container catering-enquiry">
         <div class="catering-enquiry-side">
             <h2 id="quote-title">Tell us about your event</h2>
-            <p>The more you tell us, the more exact your price. We use your details only to answer your enquiry.</p>
+            <p>The more you tell us, the more exact your quote. We use your details only to answer your enquiry.</p>
             <ul class="catering-next">
                 <li>We read every enquiry ourselves</li>
-                <li>You get a price based on our café menu</li>
+                <li>You get a quote for your event</li>
                 <li>Nothing is booked until you say yes</li>
             </ul>
             <img class="catering-side-photo" src="images/tostadas-and-torta.jpg" alt="Tostadas and a torta on the table at Cilantro Café" loading="lazy">
@@ -300,7 +318,7 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                     <p>Thanks — we have your catering enquiry for
                         <strong><?= (int) $cat_sent['guests'] ?> guests</strong>
                         (<?= e(catering_package_name($cat_sent['package'])) ?>).</p>
-                    <p>We'll come back to you with an exact price. If you gave us your email, a copy is on its way.</p>
+                    <p>We'll come back to you with a quote. If you gave us your email, a copy is on its way.</p>
                     <a class="btn btn-green" href="menu.php">See the menu</a>
                 </div>
             <?php else: ?>
@@ -355,7 +373,7 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                                     <option value="">Choose one</option>
                                     <?php foreach ($cat_packages as $key => $pkg): ?>
                                         <option value="<?= e($key) ?>" <?= $cat_old['package'] === $key ? 'selected' : '' ?>>
-                                            <?= e($pkg['name']) ?><?= $pkg['price'] !== null ? ' — from ' . e(catering_money($pkg['price'])) . ' pp' : '' ?>
+                                            <?= e($pkg['name']) ?><?= (show_prices() && $pkg['price'] !== null) ? ' — from ' . e(catering_money($pkg['price'])) . ' pp' : '' ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -446,7 +464,7 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
 <section class="section cta-band">
     <div class="container cta-inner">
         <h2>Feeding a crowd?</h2>
-        <a class="btn btn-light" href="#price">Get your price</a>
+        <a class="btn btn-light" href="#price">Get a quote</a>
     </div>
 </section>
 

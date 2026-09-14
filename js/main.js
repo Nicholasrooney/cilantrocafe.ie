@@ -349,6 +349,7 @@ function cookieChoice(set) {
   var priceEl = card.querySelector('[data-pc-price]');
   var totalEl = card.querySelector('[data-pc-total]');
   var inclEl  = card.querySelector('[data-pc-includes]');
+  var nameEl  = card.querySelector('[data-pc-name]');
   if (!range || !select) return;
 
   function euro(n, cents) {
@@ -366,6 +367,10 @@ function cookieChoice(set) {
     if (guestEl) guestEl.textContent = guests;
     range.setAttribute('aria-valuetext', guests + ' guests');
     if (inclEl && opt) inclEl.textContent = opt.dataset.includes || '';
+    if (nameEl && opt) nameEl.textContent = opt.textContent.trim();
+
+    // Prices switched off in config: the card names the package instead.
+    if (!priceEl) return;
 
     if (isNaN(price)) {
       priceEl.textContent = 'Price on request';
@@ -429,6 +434,8 @@ function cookieChoice(set) {
       if (t.name === 'package')  track('catering_package_select',  { label: t.value });
       // 'change' fires once when the slider is let go, not on every step.
       if (t.name === 'guests')   track('catering_guests_set', { guests: parseInt(t.value, 10) || 0 });
+      // Only that a location was given — never what it says, which could be an address.
+      if (t.name === 'location' && t.value.trim()) track('catering_location_entered', {});
     });
 
     var contact = card.querySelector('#pc-contact');

@@ -103,7 +103,14 @@ $menuNode = seo_menu_node($menu);
 $items = array_sum(array_map(fn($s) => count($s['hasMenuItem']), $menuNode['hasMenuSection']));
 check('every menu section in schema', count($menuNode['hasMenuSection']), count($menu));
 check('every dish in schema',         $items, 68);
-check('prices carried in euro',       $menuNode['hasMenuSection'][0]['hasMenuItem'][0]['offers']['priceCurrency'], 'EUR');
+$GLOBALS['site']['show_prices'] = false;
+$hidden = seo_menu_node($menu);
+check('no prices sent to Google while prices are off', isset($hidden['hasMenuSection'][0]['hasMenuItem'][0]['offers']), false);
+
+$GLOBALS['site']['show_prices'] = true;
+$shown = seo_menu_node($menu);
+check('prices carried in euro when switched on', $shown['hasMenuSection'][0]['hasMenuItem'][0]['offers']['priceCurrency'], 'EUR');
+$GLOBALS['site']['show_prices'] = false;
 
 $crumbs = seo_breadcrumbs(['Menu' => 'menu.php']);
 check('breadcrumb starts at home', $crumbs['itemListElement'][0]['name'], 'Home');

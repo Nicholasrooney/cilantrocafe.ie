@@ -181,12 +181,16 @@ function seo_menu_node(array $menu): array
             $entry = [
                 '@type' => 'MenuItem',
                 'name'  => $item['name'],
-                'offers' => [
+            ];
+            // Prices go to Google only when the page shows them too; a price
+            // in search results that is not on the page is misleading.
+            if (show_prices()) {
+                $entry['offers'] = [
                     '@type'         => 'Offer',
                     'price'         => $item['price'],
                     'priceCurrency' => 'EUR',
-                ],
-            ];
+                ];
+            }
             if (!empty($item['desc'])) {
                 $entry['description'] = $item['desc'];
             }

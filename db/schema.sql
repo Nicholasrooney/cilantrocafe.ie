@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS catering_enquiries (
     occasion           VARCHAR(40)  NOT NULL DEFAULT '',
     event_date         DATE         NULL,
     guests             SMALLINT     NOT NULL,
+    location           VARCHAR(200) NOT NULL DEFAULT '',
     package            VARCHAR(40)  NOT NULL DEFAULT '',
     price_per_person   DECIMAL(8,2) NULL,
     estimate_total     INT          NULL,

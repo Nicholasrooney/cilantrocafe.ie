@@ -22,6 +22,12 @@ $site = [
     // map apps guessing at the wrong unit in the shopping centre.
     'coords'    => '',
 
+    // Show prices on the menu and the catering page? Off for now. Everything
+    // price-related follows this one switch: menu prices and add-on prices,
+    // the home page dishes, the catering price card, emails, and the prices
+    // sent to Google. Set to true to bring them all back.
+    'show_prices' => false,
+
     // Opening hours are NOT set here. They come from $booking['service_hours']
     // below, and are filled in at the bottom of this file, so the hours shown
     // on the site, the hours Google is told, and the times the booking form
@@ -322,4 +328,24 @@ function asset(string $path): string
     $file  = __DIR__ . '/../' . $path;
     $stamp = is_file($file) ? filemtime($file) : time();
     return '/' . $path . '?v=' . $stamp;
+}
+
+/**
+ * Whether prices are shown anywhere on the site. See $site['show_prices'].
+ */
+function show_prices(): bool
+{
+    global $site;
+    return !empty($site['show_prices']);
+}
+
+/**
+ * Takes the euro amounts out of a line of menu text, for when prices are off:
+ *
+ *     "Add bacon +€3.50 or salmon +€5.00"  ->  "Add bacon or salmon"
+ */
+function strip_prices(string $text): string
+{
+    $text = preg_replace('/\s*\+?\s*€\s*\d+(?:[.,]\d{1,2})?/u', '', $text);
+    return trim(preg_replace('/\s{2,}/', ' ', $text));
 }

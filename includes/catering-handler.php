@@ -37,6 +37,7 @@ $cat_card = [
     'occasion' => 'birthday',
     'guests'   => 50,
     'package'  => 'taco_bar',
+    'location' => '',
     'contact'  => '',
 ];
 
@@ -74,22 +75,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $package = $catering['occasions'][$occasion]['package'];
         }
 
-        $guests  = catering_clamp_guests((int) ($_POST['guests'] ?? 50));
-        $raw     = trim((string) ($_POST['contact'] ?? ''));
-        $contact = catering_parse_contact($raw);
+        $guests   = catering_clamp_guests((int) ($_POST['guests'] ?? 50));
+        $location = trim(preg_replace('/\s+/', ' ', (string) ($_POST['location'] ?? '')));
+        $raw      = trim((string) ($_POST['contact'] ?? ''));
+        $contact  = catering_parse_contact($raw);
 
-        $cat_card = ['occasion' => $occasion, 'guests' => $guests, 'package' => $package, 'contact' => $raw];
+        $cat_card = [
+            'occasion' => $occasion, 'guests' => $guests, 'package' => $package,
+            'location' => $location, 'contact' => $raw,
+        ];
+
+        if ((function_exists('mb_strlen') ? mb_strlen($location, 'UTF-8') : strlen($location)) > 200) {
+            $cat_errors['location'] = 'Keep the location under 200 characters.';
+        }
 
         if (!$contact) {
-            $cat_errors['contact'] = 'Enter a phone number or an email address so we can send you your price.';
-        } else {
-            $price  = $cat_packages[$package]['price'];
+            $cat_errors['contact'] = 'Enter a phone number or an email address so we can send you a quote.';
+        } elseif (!$cat_errors) {
+            // Only record a price if the visitor was actually shown one.
+            $price  = show_prices() ? $cat_packages[$package]['price'] : null;
             $record = [
                 'source'           => 'price_card',
                 'phone'            => $contact['phone'],
                 'email'            => $contact['email'],
                 'occasion'         => $occasion,
                 'guests'           => $guests,
+                'location'         => $location,
                 'package'          => $package,
                 'price_per_person' => $price,
                 'estimate_total'   => catering_estimate($price, $guests),
@@ -156,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$cat_errors) {
-            $price  = $cat_packages[$cat_old['package']]['price'];
+            $price  = show_prices() ? $cat_packages[$cat_old['package']]['price'] : null;
             $record = [
                 'source'            => 'full_form',
                 'name'              => $cat_old['name'],

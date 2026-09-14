@@ -157,4 +157,79 @@ check('purge removes the old one',       catering_purge_old(24), 1);
 check('old enquiry gone',                catering_get($old), null);
 check('recent enquiry kept',             catering_get($keep) !== null, true);
 
+// ---------------------------------------------------------------- prices off
+
+section('Prices can be switched off');
+
+$savedShow = $GLOBALS['site']['show_prices'];
+
+$GLOBALS['site']['show_prices'] = false;
+check('off means off', show_prices(), false);
+$GLOBALS['site']['show_prices'] = true;
+check('on means on', show_prices(), true);
+$GLOBALS['site']['show_prices'] = $savedShow;
+
+check('an add-on price is removed',        strip_prices('Add cheese +€1.00'), 'Add cheese');
+check('two prices in one line',            strip_prices('Add bacon +€3.50 or salmon +€5.00'), 'Add bacon or salmon');
+check('extra toppings',                    strip_prices('Extra toppings +€1.50'), 'Extra toppings');
+check('text without a price is untouched', strip_prices('Salsa: verde (mild), roja (medium) or negra (spicy).'),
+    'Salsa: verde (mild), roja (medium) or negra (spicy).');
+
+$menu = [];
+require __DIR__ . '/../includes/menu-data.php';
+$leftover = [];
+foreach ($menu as $sectionData) {
+    foreach ($sectionData['items'] as $item) {
+        foreach (array_merge([$item['desc']], $item['extra']) as $text) {
+            if (str_contains(strip_prices($text), '€')) {
+                $leftover[] = $text;
+            }
+        }
+    }
+}
+check('no euro sign survives anywhere in the menu text', $leftover, []);
+
+$lines = catering_summary_lines(['occasion' => 'birthday', 'guests' => 30, 'package' => 'taco_bar']);
+check('an email with no price shown has no price line',
+    count(array_filter($lines, fn($l) => str_starts_with($l, 'Price'))), 0);
+
+// ---------------------------------------------------------------- location
+
+section('Location');
+
+fresh_database();
+$withLocation = catering_save([
+    'source' => 'price_card', 'phone' => '0861234567', 'guests' => 40,
+    'location' => 'An office in Sandyford', 'package' => 'torta_platters',
+]);
+check('location stored', catering_get($withLocation)['location'], 'An office in Sandyford');
+check('location in the email', in_array('Location: An office in Sandyford',
+    catering_summary_lines(catering_get($withLocation)), true), true);
+check('no location means no location line',
+    count(array_filter(catering_summary_lines(['guests' => 20, 'package' => 'taco_bar']), fn($l) => str_starts_with($l, 'Location'))), 0);
+
+section('A table from before location existed gains the column');
+
+// The live table may already exist without a location column. Rebuild it the
+// old way and make sure an enquiry with a location still lands.
+fresh_database();
+$catDdl = '';
+foreach (db_sql_statements((string) file_get_contents(__DIR__ . '/schema.sql'), 'sqlite') as $statement) {
+    if (stripos($statement, 'catering_enquiries') !== false) {
+        $catDdl = $statement;
+    }
+}
+$oldDdl = preg_replace('/^\s*location\b[^\n]*\n/m', '', $catDdl);
+check('old table definition really has no location', stripos($oldDdl, 'location'), false);
+
+db()->exec('DROP TABLE catering_enquiries');
+db()->exec($oldDdl);
+
+$migrated = catering_save([
+    'source' => 'price_card', 'email' => 'old@example.com', 'guests' => 25,
+    'location' => 'Dún Laoghaire', 'package' => 'brunch_spread',
+]);
+check('saved after adding the column', $migrated > 0, true);
+check('location reads back', catering_get($migrated)['location'], 'Dún Laoghaire');
+
 finish();

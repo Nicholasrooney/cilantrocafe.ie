@@ -94,6 +94,9 @@ staff_head('Catering', 'catering');
         <dl class="enquiry-facts">
             <div><dt>Occasion</dt><dd><?= e(catering_occasion_label($r['occasion'])) ?></dd></div>
             <div><dt>Guests</dt><dd><?= (int) $r['guests'] ?></dd></div>
+            <?php if (!empty($r['location'])): ?>
+                <div><dt>Location</dt><dd><?= e($r['location']) ?></dd></div>
+            <?php endif; ?>
             <div><dt>Package</dt><dd><?= e(catering_package_name($r['package'])) ?></dd></div>
             <?php if ($r['price_per_person'] !== null): ?>
                 <div><dt>Shown</dt><dd>from <?= e(catering_money((float) $r['price_per_person'])) ?> pp<?php

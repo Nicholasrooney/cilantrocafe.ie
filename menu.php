@@ -1,7 +1,7 @@
 <?php
-$pageTitle       = 'Menu & Prices | Cilantro Café, Blackrock Dublin';
-$pageDescription = 'Full Cilantro Café menu with prices: breakfast and brunch, tortas, taco trios, birria, enchiladas, kids meals, conchas, coffee, wine and cocktails. Allergens listed on every dish.';
-$pageKeywords    = 'Mexican menu Dublin, taco prices Dublin, brunch menu Blackrock, birria Dublin, Mexican food Blackrock, café menu Dublin';
+$pageTitle       = 'Menu | Cilantro Café, Blackrock Dublin';
+$pageDescription = 'The full Cilantro Café menu: breakfast and brunch, tortas, taco trios, birria, enchiladas, kids meals, conchas, coffee, wine and cocktails. Allergens listed on every dish.';
+$pageKeywords    = 'Mexican menu Dublin, tacos Dublin, brunch menu Blackrock, birria Dublin, Mexican food Blackrock, café menu Dublin';
 $activePage      = 'menu';
 
 require_once __DIR__ . '/includes/menu-data.php';
@@ -47,13 +47,15 @@ require __DIR__ . '/includes/header.php';
                                     </span>
                                 <?php endif; ?>
                             </h3>
-                            <span class="price">€<?= e($item['price']) ?></span>
+                            <?php if (show_prices()): ?>
+                                <span class="price">€<?= e($item['price']) ?></span>
+                            <?php endif; ?>
                         </div>
                         <?php if ($item['desc']): ?>
                             <p class="menu-desc"><?= e($item['desc']) ?></p>
                         <?php endif; ?>
                         <?php foreach ($item['extra'] as $extra): ?>
-                            <p class="menu-extra"><?= e($extra) ?></p>
+                            <p class="menu-extra"><?= e(show_prices() ? $extra : strip_prices($extra)) ?></p>
                         <?php endforeach; ?>
                     </li>
                 <?php endforeach; ?>

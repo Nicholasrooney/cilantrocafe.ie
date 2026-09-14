@@ -176,7 +176,20 @@ function catering_create_table(PDO $pdo): void
 }
 
 /**
- * Runs a query, creating the table once and retrying if it does not exist.
+ * Columns added to catering_enquiries after it first went live. Each one is
+ * added the first time a query trips over it being missing, so the live
+ * database never needs a manual migration.
+ */
+function catering_column_migrations(): array
+{
+    return [
+        'location' => "ALTER TABLE catering_enquiries ADD COLUMN location VARCHAR(200) NOT NULL DEFAULT ''",
+    ];
+}
+
+/**
+ * Runs a query, creating the table or a newer column once and retrying if
+ * either is missing.
  */
 function catering_query(callable $work)
 {
@@ -189,12 +202,23 @@ function catering_query(callable $work)
         $missing = stripos($msg, 'catering_enquiries') !== false
             && (stripos($msg, "doesn't exist") !== false || stripos($msg, 'no such table') !== false);
 
-        if (!$missing) {
-            throw $e;
+        if ($missing) {
+            catering_create_table($pdo);
+            return $work($pdo);
         }
 
-        catering_create_table($pdo);
-        return $work($pdo);
+        foreach (catering_column_migrations() as $column => $ddl) {
+            $mentions = stripos($msg, $column) !== false
+                && (stripos($msg, 'unknown column') !== false
+                    || stripos($msg, 'no such column') !== false
+                    || stripos($msg, 'has no column') !== false);
+            if ($mentions) {
+                $pdo->exec($ddl);
+                return $work($pdo);
+            }
+        }
+
+        throw $e;
     }
 }
 
@@ -207,10 +231,10 @@ function catering_save(array $d): int
         $now = db_now();
         $stmt = $pdo->prepare(
             'INSERT INTO catering_enquiries
-                (source, name, phone, email, occasion, event_date, guests, package,
+                (source, name, phone, email, occasion, event_date, guests, location, package,
                  price_per_person, estimate_total, fulfilment, delivery_address, notes,
                  marketing_consent, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             $d['source'] ?? 'full_form',
@@ -220,6 +244,7 @@ function catering_save(array $d): int
             $d['occasion'] ?? '',
             ($d['event_date'] ?? '') !== '' ? $d['event_date'] : null,
             (int) $d['guests'],
+            mb_substr(trim((string) ($d['location'] ?? '')), 0, 200),
             $d['package'] ?? '',
             $d['price_per_person'] ?? null,
             $d['estimate_total'] ?? null,
@@ -347,6 +372,10 @@ function catering_summary_lines(array $d): array
         'Package:  ' . catering_package_name($d['package'] ?? ''),
     ];
 
+    if (!empty($d['location'])) {
+        $lines[] = 'Location: ' . $d['location'];
+    }
+
     if (!empty($d['price_per_person'])) {
         $est = !empty($d['estimate_total']) ? ' (around ' . catering_money((float) $d['estimate_total'], false) . ' total)' : '';
         $lines[] = 'Price:    from ' . catering_money((float) $d['price_per_person']) . ' per person' . $est;
@@ -425,8 +454,7 @@ function catering_mail_confirmation(array $d): bool
         array_map(fn($l) => '  ' . $l, catering_summary_lines($d)),
         [
             '',
-            'Prices shown on the website are starting prices per person from our menu.',
-            "We'll come back to you with an exact price for your event.",
+            "We'll come back to you with a quote for your event.",
             '',
             $site['name'] . ', ' . $site['address'] . (!empty($site['eircode']) ? ', ' . $site['eircode'] : ''),
             'https://' . $site['domain'],
