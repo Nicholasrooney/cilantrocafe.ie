@@ -113,6 +113,28 @@ function db_transaction(callable $work)
 /**
  * 'now' in the café's timezone, formatted for a DATETIME column.
  */
+/**
+ * Splits a schema file into runnable statements for the given driver.
+ *
+ * db/schema.sql is written for MySQL. For SQLite (the tests, and local
+ * development) the MySQL-only parts are translated away, so there is exactly
+ * one schema file and nothing can drift between the two.
+ */
+function db_sql_statements(string $sql, string $driver = 'mysql'): array
+{
+    $sql = preg_replace('/--[^\n]*/', '', $sql);
+
+    if ($driver === 'sqlite') {
+        $sql = preg_replace('/\)\s*ENGINE=[^;]*;/s', ');', $sql);
+        $sql = str_replace('INT UNSIGNED AUTO_INCREMENT PRIMARY KEY', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sql);
+        $sql = str_replace('INT UNSIGNED', 'INTEGER', $sql);
+        $sql = preg_replace('/^[ \t]*(UNIQUE +)?KEY\b[^\n]*\n/mi', '', $sql);
+        $sql = preg_replace('/,(\s*)\)/', '$1)', $sql);
+    }
+
+    return array_values(array_filter(array_map('trim', explode(';', $sql))));
+}
+
 function db_now(): string
 {
     return (new DateTimeImmutable('now', new DateTimeZone('Europe/Dublin')))->format('Y-m-d H:i:s');

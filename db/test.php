@@ -11,86 +11,10 @@
  * code path that runs on MySQL in production.
  */
 
-require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/test-helpers.php';
 require_once __DIR__ . '/../includes/customers.php';
 require_once __DIR__ . '/../includes/bookings.php';
 require_once __DIR__ . '/../includes/capacity.php';
-
-$passed = 0;
-$failed = 0;
-
-function check(string $label, $actual, $expected): void
-{
-    global $passed, $failed;
-    if ($actual === $expected) {
-        echo "  PASS  $label\n";
-        $passed++;
-    } else {
-        echo "  FAIL  $label\n";
-        echo "          expected: " . var_export($expected, true) . "\n";
-        echo "          actual:   " . var_export($actual, true) . "\n";
-        $failed++;
-    }
-}
-
-function throws(string $label, string $exceptionClass, callable $fn): void
-{
-    global $passed, $failed;
-    try {
-        $fn();
-        echo "  FAIL  $label (expected $exceptionClass, nothing thrown)\n";
-        $failed++;
-    } catch (Throwable $e) {
-        if ($e instanceof $exceptionClass) {
-            echo "  PASS  $label\n";
-            $passed++;
-        } else {
-            echo "  FAIL  $label (expected $exceptionClass, got " . get_class($e) . ": {$e->getMessage()})\n";
-            $failed++;
-        }
-    }
-}
-
-function section(string $title): void
-{
-    echo "\n" . $title . "\n" . str_repeat('-', strlen($title)) . "\n";
-}
-
-/**
- * Builds the schema on SQLite from the MySQL file, so the two cannot drift:
- * if a column is added to schema.sql the tests pick it up automatically.
- */
-function fresh_database(): PDO
-{
-    // In memory: every call is a guaranteed-clean database, nothing to delete
-    // afterwards, and no file for Windows to keep locked between runs.
-    $pdo = db_connect(['driver' => 'sqlite', 'path' => ':memory:']);
-
-    $sql = (string) file_get_contents(__DIR__ . '/schema.sql');
-    $sql = preg_replace('/--[^\n]*/', '', $sql);                        // comments
-    $sql = preg_replace('/\)\s*ENGINE=[^;]*;/s', ');', $sql);           // table options
-    $sql = str_replace('INT UNSIGNED AUTO_INCREMENT PRIMARY KEY', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sql);
-    $sql = str_replace('INT UNSIGNED', 'INTEGER', $sql);
-    $sql = preg_replace('/^[ \t]*(UNIQUE +)?KEY\b[^\n]*\n/mi', '', $sql);  // inline index definitions
-    $sql = preg_replace('/,(\s*)\)/', '$1)', $sql);                     // the comma they left behind
-
-    foreach (array_filter(array_map('trim', explode(';', $sql))) as $statement) {
-        try {
-            $pdo->exec($statement);
-        } catch (PDOException $e) {
-            fwrite(STDERR, "Schema translation failed on:\n$statement\n\n" . $e->getMessage() . "\n");
-            exit(1);
-        }
-    }
-
-    // MySQL declared this inline as UNIQUE KEY; SQLite needs it as its own
-    // statement. The customer-matching tests depend on it existing.
-    $pdo->exec('CREATE UNIQUE INDEX uq_customers_phone_key ON customers(phone_key)');
-
-    db($pdo);
-    return $pdo;
-}
 
 echo "Cilantro Café — booking data layer tests\n";
 echo str_repeat('=', 64) . "\n";

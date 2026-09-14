@@ -40,6 +40,15 @@ $updated = 'September 2026';
     <p>Staff can add their own notes to your record — for example an allergy you
        mentioned, or that you prefer the booth. You can ask to see these.</p>
 
+    <h2>When you ask about catering</h2>
+    <p>If you use our catering page, we keep what you send us: your phone number
+       or email, and — if you use the full form — your name, the occasion, date,
+       numbers, package, whether you want pickup or delivery, a delivery address
+       and any notes. We also note the starting price you were shown.</p>
+    <p>We use it only to answer your enquiry and, if you go ahead, to arrange the
+       catering. Enquiries that go quiet are deleted <?= (int) ($booking['retention_months'] ?? 24) ?> months
+       after they were last updated.</p>
+
     <h2>Marketing emails</h2>
     <p>We only email you about offers and events if you ticked the box asking us
        to. That is separate from booking a table, and your booking is unaffected
@@ -68,10 +77,19 @@ $updated = 'September 2026';
     <p>This site sets one cookie of its own, which keeps your booking form secure
        while you fill it in. It is deleted when you close your browser and it does
        not track you.</p>
-    <p>We do not use advertising or analytics cookies. Our home page shows a map
-       loaded from Google, and Google may set their own cookies when it loads. If
-       you would rather that did not happen, choose "Essential only" in the cookie
-       notice and we will hide the map and show a plain link instead.</p>
+    <p><strong>Google Analytics.</strong> If you choose "Accept all" in the cookie
+       notice, we use Google Analytics to understand how people use this site —
+       which pages are visited, and whether people tap things like the menu,
+       directions or the booking form. It sets cookies whose names start with
+       <code>_ga</code>. We do not send Google your name, phone number, email or
+       anything you type into a form, and we do not use it for advertising.
+       Nothing is sent to Google unless you accept.</p>
+    <p><strong>Google Maps.</strong> Our home page shows a map loaded from Google,
+       and Google may set their own cookies when it loads. If you choose
+       "Essential only" we hide the map and show a plain link instead.</p>
+    <p>You can change your mind at any time using <strong>Cookie settings</strong>
+       at the bottom of every page. Choosing "Essential only" stops analytics and
+       deletes its cookies.</p>
 
     <h2>Your rights</h2>
     <p>Under GDPR you can ask us to:</p>

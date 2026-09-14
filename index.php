@@ -79,6 +79,16 @@ $featured = [
     </div>
 </section>
 
+<section class="section catering-teaser" aria-labelledby="catering-teaser-title">
+    <div class="container catering-teaser-inner">
+        <div>
+            <h2 id="catering-teaser-title">Catering for <?= (int) $catering['min_guests'] ?> to <?= (int) $catering['max_guests'] ?></h2>
+            <p>Taco bars, torta platters and brunch spreads for offices, parties and weddings. Priced from our menu, collected or delivered.</p>
+        </div>
+        <a class="btn btn-light" href="event-catering.php">See catering prices</a>
+    </div>
+</section>
+
 <section class="section visit">
     <div class="container visit-grid">
         <div>

@@ -14,6 +14,7 @@ $pages = [
     'index.php'   => ['weekly',  '1.0'],
     'menu.php'    => ['weekly',  '0.9'],
     'booking.php' => ['monthly', '0.9'],
+    'event-catering.php' => ['monthly', '0.9'],
     'gallery.php' => ['monthly', '0.7'],
 ];
 

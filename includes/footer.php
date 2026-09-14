@@ -36,6 +36,7 @@
     <p class="footer-legal">
         &copy; <?= date('Y') ?> <?= e($site['name']) ?>
         · <a href="privacy.php">Privacy</a>
+        · <button type="button" class="link-button" data-cookie-settings>Cookie settings</button>
     </p>
 </footer>
 

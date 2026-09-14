@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/seo.php';
+require_once __DIR__ . '/analytics.php';
 
 $pageTitle       = $pageTitle       ?? $site['name'];
 $pageDescription = $pageDescription ?? 'Mexican café in Dublin serving tacos, flautas, birria, brunch and fresh conchas.';
@@ -11,8 +12,9 @@ $pageSchema      = $pageSchema      ?? [];
 $nav = [
     'home'    => ['Home', 'index.php'],
     'menu'    => ['Menu', 'menu.php'],
-    'gallery' => ['Gallery', 'gallery.php'],
-    'booking' => ['Book a table', 'booking.php'],
+    'gallery'  => ['Gallery', 'gallery.php'],
+    'catering' => ['Event Catering', 'event-catering.php'],
+    'booking'  => ['Book a table', 'booking.php'],
 ];
 
 $hasLogo = file_exists(__DIR__ . '/../images/logo.png');
@@ -39,6 +41,7 @@ $hasLogo = file_exists(__DIR__ . '/../images/logo.png');
     <meta property="og:image" content="<?= e(seo_url($pageImage ?? 'images/storefront.jpg')) ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#0d5c46">
+    <?php render_analytics_head(); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Young+Serif&display=swap" rel="stylesheet">

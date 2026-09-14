@@ -107,14 +107,54 @@ function mail_booking_confirmation(array $b): bool
 }
 
 /**
+ * Everyone who should be told about bookings and catering enquiries.
+ *
+ * $booking['notify_email'] may be one address or a list. Invalid entries are
+ * dropped rather than breaking every alert, and duplicates are removed.
+ */
+function mail_notify_recipients(): array
+{
+    global $booking;
+
+    $raw  = $booking['notify_email'] ?? [];
+    $list = is_array($raw) ? $raw : preg_split('/[,;\s]+/', (string) $raw);
+
+    $out = [];
+    foreach ($list as $address) {
+        $address = trim((string) $address);
+        // First spelling wins; a later "OK@..." is the same inbox as "ok@...".
+        if ($address !== '' && filter_var($address, FILTER_VALIDATE_EMAIL) && !isset($out[strtolower($address)])) {
+            $out[strtolower($address)] = $address;
+        }
+    }
+
+    return array_values($out);
+}
+
+/**
+ * Sends the same alert to each recipient separately, so one bad address or a
+ * bounce never stops the others, and nobody sees who else was copied in.
+ * Returns true if at least one went.
+ */
+function mail_send_alert(string $subject, string $body, array $opts = []): bool
+{
+    $sent = false;
+    foreach (mail_notify_recipients() as $to) {
+        if (mail_send($to, $subject, $body, $opts)) {
+            $sent = true;
+        }
+    }
+    return $sent;
+}
+
+/**
  * Alert to the café, so somebody actually knows a booking came in.
  */
 function mail_booking_alert(array $b): bool
 {
-    global $site, $booking;
+    global $site;
 
-    $to = $booking['notify_email'] ?? '';
-    if ($to === '') {
+    if (!mail_notify_recipients()) {
         return false;
     }
 
@@ -136,8 +176,7 @@ function mail_booking_alert(array $b): bool
     $lines[] = "";
     $lines[] = "Open the diary: https://" . $site['domain'] . "/staff/";
 
-    return mail_send(
-        $to,
+    return mail_send_alert(
         sprintf('Booking: %s, %s for %d', $b['name'], mail_when($b['date'], $b['time']), (int) $b['guests']),
         implode("\n", $lines),
         ['reply_to' => $b['email'] ?: null]

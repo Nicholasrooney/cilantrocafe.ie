@@ -59,3 +59,33 @@ CREATE TABLE IF NOT EXISTS booking_audit (
     at          DATETIME     NOT NULL,
     KEY idx_audit_booking (booking_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Catering enquiries from event-catering.php.
+--
+-- Deliberately separate from bookings/customers: an enquiry is a sales lead,
+-- not a table, and it often arrives with only a phone number or an email from
+-- the price card. price_per_person and estimate_total record what the visitor
+-- was shown at the time, so a later menu price change does not rewrite history.
+CREATE TABLE IF NOT EXISTS catering_enquiries (
+    id                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    source             VARCHAR(20)  NOT NULL DEFAULT 'full_form',
+    name               VARCHAR(120) NOT NULL DEFAULT '',
+    phone              VARCHAR(32)  NOT NULL DEFAULT '',
+    email              VARCHAR(190) NOT NULL DEFAULT '',
+    occasion           VARCHAR(40)  NOT NULL DEFAULT '',
+    event_date         DATE         NULL,
+    guests             SMALLINT     NOT NULL,
+    package            VARCHAR(40)  NOT NULL DEFAULT '',
+    price_per_person   DECIMAL(8,2) NULL,
+    estimate_total     INT          NULL,
+    fulfilment         VARCHAR(20)  NOT NULL DEFAULT '',
+    delivery_address   TEXT         NULL,
+    notes              TEXT         NULL,
+    marketing_consent  TINYINT      NOT NULL DEFAULT 0,
+    status             VARCHAR(20)  NOT NULL DEFAULT 'new',
+    staff_notes        TEXT         NULL,
+    created_at         DATETIME     NOT NULL,
+    updated_at         DATETIME     NOT NULL,
+    KEY idx_catering_status  (status),
+    KEY idx_catering_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

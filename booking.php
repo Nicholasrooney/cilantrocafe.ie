@@ -51,7 +51,16 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
 
     <div class="booking-main">
         <?php if ($confirmed && isset($_GET['sent'])): ?>
-            <div class="confirmation" role="status">
+            <?php
+            // Reported to analytics as a completed booking. Party size, time
+            // and weekday only: never the name, phone or email.
+            $confirmedDay = strtok((string) $confirmed['date'], ' ');
+            ?>
+            <div class="confirmation" role="status"
+                 data-track-view="booking_submitted"
+                 data-guests="<?= (int) $confirmed['guests'] ?>"
+                 data-time="<?= e($confirmed['time']) ?>"
+                 data-day="<?= e($confirmedDay) ?>">
                 <h2>Booking request sent</h2>
                 <p>Thanks, <?= e($confirmed['name']) ?>. We've got your request for
                     <strong><?= (int) $confirmed['guests'] ?> <?= $confirmed['guests'] === 1 ? 'guest' : 'guests' ?></strong>

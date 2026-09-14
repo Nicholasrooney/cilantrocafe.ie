@@ -375,3 +375,46 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); }
 @media (max-width: 520px) {
   .status-do .btn-danger { margin-left: 0; width: 100%; }
 }
+
+/* ---------- catering enquiries ---------- */
+
+.tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0 1.25rem; }
+.tabs a {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.45rem 0.85rem; min-height: 40px;
+  background: var(--white); border: 1px solid var(--line); border-radius: 999px;
+  color: var(--ink); text-decoration: none; font-size: 0.95rem;
+}
+.tabs a.on { background: var(--green); border-color: var(--green); color: var(--white); }
+.tabs .count {
+  min-width: 1.4rem; padding: 0 0.35rem; border-radius: 999px;
+  background: var(--wall); color: var(--muted); font-size: 0.78rem; text-align: center;
+}
+.tabs a.on .count { background: rgba(255,255,255,0.2); color: var(--white); }
+
+.enquiry-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; }
+.enquiry-head h2 { margin: 0; font-size: 1.2rem; }
+.enquiry-head .sub { margin: 0.15rem 0 0; }
+
+.tag-new    { color: var(--warn); }
+.tag-quoted { color: #1d5fa8; }
+.tag-booked { color: var(--ok); }
+.tag-lost   { color: var(--bad); }
+
+.enquiry-facts {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem 1rem; margin: 0 0 1rem;
+}
+.enquiry-facts div.wide { grid-column: 1 / -1; }
+.enquiry-facts dt { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.enquiry-facts dd { margin: 0.1rem 0 0; font-weight: 500; }
+
+.enquiry-contact { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+.enquiry .status-do { margin-bottom: 0.9rem; }
+.enquiry-notes label { font-size: 0.9rem; }
+.enquiry-notes-do { margin-top: 0.4rem; }
+.enquiry-delete { margin-top: 0.75rem; text-align: right; }
+.link-danger {
+  background: none; border: 0; padding: 0.25rem 0; cursor: pointer;
+  font: inherit; font-size: 0.88rem; color: var(--bad); text-decoration: underline;
+}

@@ -43,3 +43,17 @@ foreach ($ids as $id) {
 echo $dryRun
     ? "Dry run — $done would have been anonymised.\n"
     : "Anonymised $done.\n";
+
+// Catering enquiries are sales leads, not customer records, so an old one is
+// deleted outright once it has sat untouched past the same retention period.
+require_once __DIR__ . '/../includes/catering.php';
+
+try {
+    $purged = catering_purge_old($months, $dryRun);
+    echo $dryRun
+        ? "Dry run — $purged catering enquiry(ies) would have been deleted.\n"
+        : "Deleted $purged old catering enquiry(ies).\n";
+} catch (Throwable $e) {
+    fwrite(STDERR, 'Catering retention could not run: ' . $e->getMessage() . "\n");
+    exit(1);
+}

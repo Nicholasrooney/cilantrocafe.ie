@@ -65,9 +65,13 @@ $booking = [
     // The data folder is blocked from public access by data/.htaccess
     'csv_file'          => __DIR__ . '/../data/bookings.csv',
 
-    // Where booking alerts land. A gmail address is completely fine here —
-    // this is a recipient, not a sender.
-    'notify_email'      => 'nicholas.rooney2010@gmail.com',
+    // Who is emailed when a booking or a catering enquiry comes in. Add or
+    // remove addresses here; each person gets their own copy. Gmail and other
+    // outside addresses are fine — these are recipients, not senders.
+    'notify_email'      => [
+        'nicholas.rooney2010@gmail.com',
+        'Alex@cilantro.ie',
+    ],
 
     /*
      * How much the café can take in one time slot.
@@ -182,6 +186,85 @@ $calendar = [
     // Token for calendar-test.php. Set to a long random string to run the test
     // page, then blank it again when you are finished.
     'test_token'       => '',
+];
+
+/*
+ * Google Analytics 4. Not a secret — it appears in every page's source.
+ * Loaded only after a visitor accepts cookies; see includes/analytics.php.
+ * Leave empty to switch analytics off entirely.
+ */
+$analytics = [
+    'ga4_id' => 'G-WSE5CQVCZ0',
+];
+
+/*
+ * Event catering (event-catering.php).
+ *
+ * Package prices are NOT typed here. Each package names the menu dishes it is
+ * built from, and its "from" price per person is read live from
+ * includes/menu-data.php: the cheapest dish in each group, added together.
+ * Change a price on the menu and the catering price follows, so the two can
+ * never disagree.
+ *
+ * If a named dish is ever removed from the menu, that package shows
+ * "price on request" instead of a wrong number.
+ */
+$catering = [
+    'min_guests' => 20,
+    'max_guests' => 200,
+
+    // Pills on the price card. Each suggests a starting package; the visitor
+    // can switch.
+    'occasions' => [
+        'office_lunch' => ['label' => 'Office lunch',             'package' => 'torta_platters'],
+        'birthday'     => ['label' => 'Birthday',                 'package' => 'taco_bar'],
+        'wedding'      => ['label' => 'Wedding',                  'package' => 'full_feast'],
+        'communion'    => ['label' => 'Communion or christening', 'package' => 'brunch_spread'],
+        'meeting'      => ['label' => 'Meeting or morning',       'package' => 'coffee_bakery'],
+        'other'        => ['label' => 'Something else',           'package' => 'taco_bar'],
+    ],
+
+    // 'price_from' is a list of groups: the price per person is the cheapest
+    // dish in each group, summed.
+    'packages' => [
+        'taco_bar' => [
+            'name'       => 'Taco bar',
+            'includes'   => 'A taco trio each — steak, chorizo or mushroom — with guacamole and pico de gallo',
+            'price_from' => [['Steak taco', 'Chorizo taco', 'Mushroom taco']],
+        ],
+        'brunch_spread' => [
+            'name'       => 'Brunch spread',
+            'includes'   => 'Chilaquiles or a breakfast burrito each',
+            'price_from' => [['Chilaquiles', 'Breakfast burrito']],
+        ],
+        'torta_platters' => [
+            'name'       => 'Torta platters',
+            'includes'   => 'A torta each, cut for sharing and served with fries',
+            'price_from' => [['Ham & cheese torta', 'Mushroom torta', 'Chicken torta', 'Chorizo torta', 'Steak torta']],
+        ],
+        'full_feast' => [
+            'name'       => 'Full Mexican feast',
+            'includes'   => 'Enchiladas verdes, flautas or birria tacos each',
+            'price_from' => [['Enchiladas verdes', 'Flautas', 'Don Taco Signature Birria']],
+        ],
+        'coffee_bakery' => [
+            'name'       => 'Coffee & bakery',
+            'includes'   => 'A concha or scone and a coffee each',
+            'price_from' => [
+                ['Conchas', 'Fruit scone', 'Plain scone'],
+                ['Espresso', 'Americano', 'Flat white', 'Cappuccino', 'Latte', 'Mocha'],
+            ],
+        ],
+    ],
+
+    /*
+     * Catering videos. The video section stays hidden until something is listed
+     * here, so the page never shows an empty "coming soon" box. Either:
+     *
+     *     ['title' => 'Taco bar at a wedding', 'file' => 'videos/wedding.mp4', 'poster' => 'images/wedding.jpg'],
+     *     ['title' => 'Office lunch for 60',   'youtube' => 'dQw4w9WgXcQ'],
+     */
+    'videos' => [],
 ];
 
 /*

@@ -31,6 +31,7 @@ function staff_head(string $title, string $active = '', bool $wide = false): voi
     <nav class="bar-nav">
         <a href="index.php"     class="<?= $active === 'day' ? 'on' : '' ?>">Today</a>
         <a href="week.php"      class="<?= $active === 'week' ? 'on' : '' ?>">Week</a>
+        <a href="catering.php"  class="<?= $active === 'catering' ? 'on' : '' ?>">Catering</a>
         <a href="customers.php" class="<?= $active === 'customers' ? 'on' : '' ?>">Customers</a>
         <a href="logout.php" class="bar-out">Log out</a>
     </nav>

@@ -29,3 +29,5 @@ data/*.sqlite
 
 # Scratch output from local testing
 /*.html
+# ...except Google Search Console's verification file, which must deploy
+!/google*.html
