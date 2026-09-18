@@ -71,12 +71,11 @@ $booking = [
     // The data folder is blocked from public access by data/.htaccess
     'csv_file'          => __DIR__ . '/../data/bookings.csv',
 
-    // Who is emailed when a booking or a catering enquiry comes in. Add or
-    // remove addresses here; each person gets their own copy. Gmail and other
-    // outside addresses are fine — these are recipients, not senders.
+    // Who is emailed when a TABLE BOOKING comes in. Each person gets their own
+    // copy. Catering enquiries have their own list in $catering below.
     'notify_email'      => [
+        'bookingscilantro@gmail.com',
         'nicholas.rooney2010@gmail.com',
-        'Alex@cilantro.ie',
     ],
 
     /*
@@ -216,6 +215,12 @@ $analytics = [
  * "price on request" instead of a wrong number.
  */
 $catering = [
+    // Who is emailed when a CATERING ENQUIRY comes in.
+    'notify_email' => [
+        'nicholas.rooney2010@gmail.com',
+        'Alex@cilantro.ie',
+    ],
+
     'min_guests' => 20,
     'max_guests' => 200,
 

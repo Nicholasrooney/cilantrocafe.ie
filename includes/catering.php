@@ -404,7 +404,10 @@ function catering_mail_alert(array $d): bool
 {
     global $site;
 
-    if (!mail_notify_recipients()) {
+    global $catering;
+
+    $recipients = mail_notify_recipients($catering['notify_email'] ?? []);
+    if (!$recipients) {
         return false;
     }
 
@@ -427,7 +430,8 @@ function catering_mail_alert(array $d): bool
     return mail_send_alert(
         sprintf('Catering enquiry: %s, %d guests', $who !== '' ? $who : 'new lead', (int) $d['guests']),
         implode("\n", $lines),
-        ['reply_to' => ($d['email'] ?? '') !== '' ? $d['email'] : null]
+        ['reply_to' => ($d['email'] ?? '') !== '' ? $d['email'] : null],
+        $recipients
     );
 }
 

@@ -107,16 +107,17 @@ function mail_booking_confirmation(array $b): bool
 }
 
 /**
- * Everyone who should be told about bookings and catering enquiries.
+ * Who to alert, from a notify_email setting. Defaults to the booking list;
+ * catering passes its own. A setting may be one address or a list. Invalid
+ * entries are dropped rather than breaking every alert, duplicates removed.
  *
- * $booking['notify_email'] may be one address or a list. Invalid entries are
- * dropped rather than breaking every alert, and duplicates are removed.
+ * @param string|array|null $raw
  */
-function mail_notify_recipients(): array
+function mail_notify_recipients($raw = null): array
 {
     global $booking;
 
-    $raw  = $booking['notify_email'] ?? [];
+    $raw  = $raw ?? ($booking['notify_email'] ?? []);
     $list = is_array($raw) ? $raw : preg_split('/[,;\s]+/', (string) $raw);
 
     $out = [];
@@ -136,10 +137,10 @@ function mail_notify_recipients(): array
  * bounce never stops the others, and nobody sees who else was copied in.
  * Returns true if at least one went.
  */
-function mail_send_alert(string $subject, string $body, array $opts = []): bool
+function mail_send_alert(string $subject, string $body, array $opts = [], ?array $recipients = null): bool
 {
     $sent = false;
-    foreach (mail_notify_recipients() as $to) {
+    foreach ($recipients ?? mail_notify_recipients() as $to) {
         if (mail_send($to, $subject, $body, $opts)) {
             $sent = true;
         }

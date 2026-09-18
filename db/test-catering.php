@@ -72,7 +72,9 @@ section('Who gets alerted');
 
 $saved = $GLOBALS['booking']['notify_email'];
 
-check('both configured addresses receive alerts', mail_notify_recipients(),
+check('table bookings alert the bookings inbox and Nicholas', mail_notify_recipients(),
+    ['bookingscilantro@gmail.com', 'nicholas.rooney2010@gmail.com']);
+check('catering alerts Nicholas and Alex', mail_notify_recipients($GLOBALS['catering']['notify_email']),
     ['nicholas.rooney2010@gmail.com', 'Alex@cilantro.ie']);
 
 $GLOBALS['booking']['notify_email'] = 'one@example.com, two@example.com';
