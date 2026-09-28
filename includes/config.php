@@ -63,9 +63,15 @@ $booking = [
 
     // Filled in below from service_hours. Do not edit by hand.
     'times' => [],
-    'max_guests'        => 10,  // bigger groups are asked to phone or email
+    'max_guests'        => 4,   // bigger groups are asked to get in touch
     'days_ahead'        => 60,  // how far in advance people can book
-    'seating'           => ['No preference', 'Booth inside', 'Table outside'],
+
+    // There are no booths. Stools are the seats to have, so they lead.
+    'seating'           => ['Stools inside', 'Table outside', 'No preference'],
+
+    // How long a table is held when the café is busy, which is usually at
+    // weekends. Shown on the booking page and in the confirmation email.
+    'table_minutes'     => 60,
 
     // Bookings are saved here until the backend is connected.
     // The data folder is blocked from public access by data/.htaccess
@@ -76,25 +82,26 @@ $booking = [
     'notify_email'      => [
         'bookingscilantro@gmail.com',
         'nicholas.rooney2010@gmail.com',
+        'Alex@cilantro.ie',
+    ],
+
+    // Who is emailed when staff CHANGE a booking — cancelled, no-show, or
+    // edited. Alex leads here; these are the ones worth interrupting someone
+    // for, so the list is deliberately shorter than the new-booking list.
+    'change_notify_email' => [
+        'Alex@cilantro.ie',
+        'nicholas.rooney2010@gmail.com',
     ],
 
     /*
-     * How much the café can take in one time slot.
+     * How many bookings the café takes in one hour, whatever their size.
+     * Slots come round every half hour, so 13:00 and 13:30 share the 13:00
+     * hour and together use up its two bookings.
      *
-     * 'tables' counts BOOKINGS — one booking, one table. With 15 tables, 15.
-     *          This is how most cafés think about it.
-     * 'covers' counts PEOPLE. Use this if you would rather cap total heads,
-     *          for example 50 covers regardless of how they are grouped.
-     *
-     * The trade-off with 'tables': a party of eight is counted as one table
-     * even though it probably takes two or three. If big groups start causing
-     * trouble, switch to 'covers'.
-     *
-     * The public form stops taking bookings once a slot is full. Staff can
+     * The public form stops offering a time once its hour is full. Staff can
      * still override, and the override is recorded.
      */
-    'capacity_mode' => 'covers',
-    'max_per_slot'  => 30,
+    'max_bookings_per_hour' => 2,
 
     // Customer details are anonymised this many months after their last visit.
     'retention_months'    => 24,
@@ -186,7 +193,7 @@ $calendar = [
     'token_cache'      => __DIR__ . '/../data/.google-token.json',
     'log_file'         => __DIR__ . '/../data/calendar-sync.log',
     'timezone'         => 'Europe/Dublin',
-    'duration_minutes' => 90,   // how long a table is held in the calendar
+    'duration_minutes' => 60,   // how long a table is held in the calendar
 
     // Token for calendar-test.php. Set to a long random string to run the test
     // page, then blank it again when you are finished.

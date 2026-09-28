@@ -91,6 +91,9 @@ function mail_booking_confirmation(array $b): bool
     }
 
     $lines[] = "";
+    $lines[] = "When we are busy, usually at weekends, tables are held for "
+             . (int) ($GLOBALS['booking']['table_minutes'] ?? 60) . " minutes.";
+    $lines[] = "";
     $lines[] = "We'll be in touch if anything needs to change. If your plans change,";
     $lines[] = "just reply to this email or give us a ring and we'll sort it.";
     $lines[] = "";
@@ -181,6 +184,55 @@ function mail_booking_alert(array $b): bool
         sprintf('Booking: %s, %s for %d', $b['name'], mail_when($b['date'], $b['time']), (int) $b['guests']),
         implode("\n", $lines),
         ['reply_to' => $b['email'] ?: null]
+    );
+}
+
+/**
+ * Tells the café when a booking is cancelled, marked a no-show, or edited in
+ * the staff diary. Goes to $booking['change_notify_email'] — a shorter list
+ * than new bookings, because these are the ones worth interrupting someone for.
+ *
+ * @param array    $b        the booking row, as booking_get() returns it
+ * @param string   $what     'cancelled', 'marked a no-show', 'edited'
+ * @param string[] $changes  optional "time: 13:00 -> 14:00" style notes
+ */
+function mail_booking_change_alert(array $b, string $what, array $changes = []): bool
+{
+    global $site, $booking;
+
+    $recipients = mail_notify_recipients(
+        $booking['change_notify_email'] ?? ($booking['notify_email'] ?? [])
+    );
+    if (!$recipients) {
+        return false;
+    }
+
+    $when = mail_when($b['booking_date'], $b['booking_time']);
+
+    $lines = [
+        "A booking was $what in the staff diary.",
+        "",
+        "When:    " . $when,
+        "Guests:  " . (int) $b['guests'],
+        "Name:    " . $b['name'],
+        "Phone:   " . ($b['phone'] ?: '—'),
+        "Email:   " . ($b['email'] ?: '—'),
+        "Seating: " . ($b['seating'] ?: 'No preference'),
+    ];
+
+    if ($changes) {
+        $lines[] = "";
+        $lines[] = "Changed: " . implode(', ', $changes);
+    }
+
+    $lines[] = "";
+    $lines[] = "Open the diary: https://" . $site['domain'] . "/staff/";
+
+    return mail_send_alert(
+        sprintf('Booking %s: %s, %s', $what, $b['name'], $when),
+        implode("\n", $lines),
+        ['reply_to' => ($b['email'] ?? '') !== '' ? $b['email'] : null],
+        $recipients
     );
 }
 

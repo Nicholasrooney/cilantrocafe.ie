@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/_layout.php';
+require_once __DIR__ . '/../includes/mailer.php';
 staff_require_login();
 staff_require_database();
 
@@ -25,7 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id     = (int) ($_POST['id'] ?? 0);
         $status = (string) ($_POST['status'] ?? '');
         if ($id && in_array($status, booking_statuses(), true)) {
-            booking_set_status($id, $status, staff_actor());
+            $before = booking_get($id);
+            if (booking_set_status($id, $status, staff_actor()) && $before) {
+                // Only the ones worth an email: a freed table or a no-show.
+                if ($status === 'cancelled' || $status === 'no_show') {
+                    mail_booking_change_alert(
+                        $before,
+                        $status === 'cancelled' ? 'cancelled' : 'marked a no-show'
+                    );
+                }
+            }
             staff_flash('Updated.');
         }
     }
@@ -35,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $rows    = bookings_for_date($date);
 $summary = bookings_day_summary($date);
-$max     = (int) ($booking['max_per_slot'] ?? 0);
+$max     = (int) ($booking['max_bookings_per_hour'] ?? 0);
 $used    = capacity_used($date);
 $flash   = staff_flash();
 
@@ -79,8 +89,9 @@ staff_head($day->format('D j M'), 'day');
             <h2 class="slot-head">
                 <?= e($time) ?>
                 <?php if ($max > 0): ?>
-                    <span class="slot-cap <?= ($used[$time] ?? 0) >= $max ? 'full' : '' ?>">
-                        <?= (int) ($used[$time] ?? 0) ?>/<?= $max ?> <?= e(capacity_noun(null, $max)) ?>
+                    <?php $inHour = (int) ($used[capacity_hour($time)] ?? 0); ?>
+                    <span class="slot-cap <?= $inHour >= $max ? 'full' : '' ?>">
+                        <?= $inHour ?>/<?= $max ?> <?= e(capacity_noun($max)) ?> this hour
                     </span>
                 <?php endif; ?>
             </h2>

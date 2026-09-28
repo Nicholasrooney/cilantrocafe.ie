@@ -1042,3 +1042,13 @@ a:hover { color: var(--fascia-deep); }
 
 /* Location box on the catering price card: full width, outside the phone/email row. */
 .pc-location { display: block; width: 100%; }
+
+/* Weekend warning on the booking page — it has to be read, not skimmed past. */
+.booking-notice {
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--teak);
+  background: #fdf3ec;
+  border-radius: 0 8px 8px 0;
+}
+/* Small note under a field, e.g. why the stools are worth asking for. */
+.field-hint { margin: 0.35rem 0 0; font-size: 0.9rem; color: var(--muted); }

@@ -72,10 +72,12 @@ section('Who gets alerted');
 
 $saved = $GLOBALS['booking']['notify_email'];
 
-check('table bookings alert the bookings inbox and Nicholas', mail_notify_recipients(),
-    ['bookingscilantro@gmail.com', 'nicholas.rooney2010@gmail.com']);
+check('table bookings alert the bookings inbox, Nicholas and Alex', mail_notify_recipients(),
+    ['bookingscilantro@gmail.com', 'nicholas.rooney2010@gmail.com', 'Alex@cilantro.ie']);
 check('catering alerts Nicholas and Alex', mail_notify_recipients($GLOBALS['catering']['notify_email']),
     ['nicholas.rooney2010@gmail.com', 'Alex@cilantro.ie']);
+check('changes alert Alex first, then Nicholas', mail_notify_recipients($GLOBALS['booking']['change_notify_email']),
+    ['Alex@cilantro.ie', 'nicholas.rooney2010@gmail.com']);
 
 $GLOBALS['booking']['notify_email'] = 'one@example.com, two@example.com';
 check('a comma-separated string also works', mail_notify_recipients(), ['one@example.com', 'two@example.com']);

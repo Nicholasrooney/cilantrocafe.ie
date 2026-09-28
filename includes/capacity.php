@@ -1,41 +1,18 @@
 <?php
 /*
- * Capacity — how many covers the café can take in one slot.
+ * Capacity — how many bookings the café takes in one hour.
+ *
+ * Two bookings an hour, whatever their size, and at most four people on a
+ * booking. Slots come round every half hour, so 13:00 and 13:30 share the
+ * 13:00 hour and together use up that hour's two bookings.
  *
  * The public form uses this twice: once when it renders, to grey out full
- * slots, and once inside the insert transaction, to settle the race when two
- * people book the last table at the same moment. The second check is the one
+ * times, and once inside the insert transaction, to settle the race when two
+ * people book the last slot at the same moment. The second check is the one
  * that actually protects the café.
  */
 
 require_once __DIR__ . '/db.php';
-
-/**
- * What one booking costs against the slot limit: one table, or its heads.
- */
-function capacity_units(int $guests, ?string $mode = null): int
-{
-    $mode = $mode ?? ($GLOBALS['booking']['capacity_mode'] ?? 'tables');
-    return $mode === 'covers' ? max(1, $guests) : 1;
-}
-
-/**
- * The SQL fragment that totals a slot, which depends on what we are counting.
- */
-function capacity_sum_expression(?string $mode = null): string
-{
-    $mode = $mode ?? ($GLOBALS['booking']['capacity_mode'] ?? 'tables');
-    return $mode === 'covers' ? 'COALESCE(SUM(guests), 0)' : 'COUNT(*)';
-}
-
-function capacity_noun(?string $mode = null, int $n = 2): string
-{
-    $mode = $mode ?? ($GLOBALS['booking']['capacity_mode'] ?? 'tables');
-    if ($mode === 'covers') {
-        return $n === 1 ? 'seat' : 'seats';
-    }
-    return $n === 1 ? 'table' : 'tables';
-}
 
 class CapacityExceeded extends RuntimeException
 {
@@ -49,7 +26,20 @@ class CapacityExceeded extends RuntimeException
 }
 
 /**
- * Covers already booked on a date, keyed by time.
+ * The hour a time belongs to: "13:30" -> "13".
+ */
+function capacity_hour(string $time): string
+{
+    return substr($time, 0, 2);
+}
+
+function capacity_noun(int $n = 2): string
+{
+    return $n === 1 ? 'booking' : 'bookings';
+}
+
+/**
+ * Bookings already taken on a date, keyed by hour ("13" => 2).
  *
  * @return array<string,int>
  */
@@ -58,7 +48,7 @@ function capacity_used(string $date, ?PDO $pdo = null, ?int $ignoreBookingId = n
     $pdo  = $pdo ?? db();
     $live = booking_live_statuses();
 
-    $sql = 'SELECT booking_time, ' . capacity_sum_expression() . ' AS covers
+    $sql = 'SELECT booking_time
               FROM bookings
              WHERE booking_date = ?
                AND status IN (' . implode(',', array_fill(0, count($live), '?')) . ')';
@@ -69,30 +59,32 @@ function capacity_used(string $date, ?PDO $pdo = null, ?int $ignoreBookingId = n
         $args[] = $ignoreBookingId;
     }
 
-    $sql .= ' GROUP BY booking_time';
-
     $stmt = $pdo->prepare($sql);
     $stmt->execute($args);
 
     $used = [];
     foreach ($stmt->fetchAll() as $row) {
-        $used[(string) $row['booking_time']] = (int) $row['covers'];
+        $hour = capacity_hour((string) $row['booking_time']);
+        $used[$hour] = ($used[$hour] ?? 0) + 1;
     }
 
     return $used;
 }
 
 /**
- * Seats still free in one slot.
+ * Bookings still free in the hour this time falls in.
  */
 function capacity_remaining(string $date, string $time, int $max, ?PDO $pdo = null, ?int $ignoreBookingId = null): int
 {
     $used = capacity_used($date, $pdo, $ignoreBookingId);
-    return max(0, $max - (int) ($used[$time] ?? 0));
+    return max(0, $max - (int) ($used[capacity_hour($time)] ?? 0));
 }
 
 /**
- * Which of the café's slots can still take a party of this size.
+ * Which times can still be booked.
+ *
+ * Party size makes no difference here — every booking costs one of the hour's
+ * two slots — but the argument stays so callers read the same as before.
  *
  * @return array<string,bool>  time => has room
  */
@@ -105,9 +97,8 @@ function capacity_slot_availability(string $date, array $times, int $max, int $g
     $used  = capacity_used($date);
     $avail = [];
 
-    $cost = capacity_units($guests);
     foreach ($times as $time) {
-        $avail[$time] = ((int) ($used[$time] ?? 0) + $cost) <= $max;
+        $avail[$time] = ((int) ($used[capacity_hour($time)] ?? 0) + 1) <= $max;
     }
 
     return $avail;
@@ -133,11 +124,12 @@ function capacity_assert_room(
     $pdo  = $pdo ?? db();
     $live = booking_live_statuses();
 
-    $sql = 'SELECT ' . capacity_sum_expression() . ' AS covers
+    // Everything inside the same clock hour counts, so 13:00 and 13:30 share.
+    $sql = 'SELECT COUNT(*)
               FROM bookings
-             WHERE booking_date = ? AND booking_time = ?
+             WHERE booking_date = ? AND booking_time LIKE ?
                AND status IN (' . implode(',', array_fill(0, count($live), '?')) . ')';
-    $args = array_merge([$date, $time], $live);
+    $args = array_merge([$date, capacity_hour($time) . ':%'], $live);
 
     if ($ignoreBookingId !== null) {
         $sql .= ' AND id <> ?';
@@ -153,13 +145,12 @@ function capacity_assert_room(
 
     $used      = (int) $stmt->fetchColumn();
     $available = max(0, $max - $used);
-    $cost      = capacity_units($guests);
 
-    if ($used + $cost > $max) {
+    if ($used + 1 > $max) {
         throw new CapacityExceeded(
             $available === 0
-                ? 'That time is fully booked.'
-                : 'That time only has ' . $available . ' ' . capacity_noun(null, $available) . ' left.',
+                ? 'That hour is fully booked.'
+                : 'That hour only has ' . $available . ' ' . capacity_noun($available) . ' left.',
             $available
         );
     }

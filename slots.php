@@ -53,7 +53,7 @@ try {
     $available = capacity_slot_availability(
         $date,
         $daySlots,
-        (int) ($booking['max_per_slot'] ?? 0),
+        (int) ($booking['max_bookings_per_hour'] ?? 0),
         $guests
     );
 } catch (Throwable $e) {

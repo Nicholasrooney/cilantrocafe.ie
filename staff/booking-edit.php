@@ -9,6 +9,7 @@
  */
 
 require_once __DIR__ . '/_layout.php';
+require_once __DIR__ . '/../includes/mailer.php';
 staff_require_login();
 staff_require_database();
 
@@ -41,6 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['status'] ?? '') !== '' && 
     if (in_array($status, booking_statuses(), true)) {
         booking_set_status($id, $status, staff_actor());
 
+        if ($status === 'cancelled' || $status === 'no_show') {
+            mail_booking_change_alert(
+                $existing,
+                $status === 'cancelled' ? 'cancelled' : 'marked a no-show'
+            );
+        }
+
         // Cancelling and no-showing free the table, so go back to the day to
         // see what that opened up. The rest keep you on the booking.
         if (in_array($status, ['cancelled', 'no_show'], true)) {
@@ -57,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['status'] ?? '') !== '' && 
     exit;
 }
 
-$max    = (int) ($booking['max_per_slot'] ?? 0);
+$max    = (int) ($booking['max_bookings_per_hour'] ?? 0);
 $errors = [];
 $warn   = '';
 
@@ -108,6 +116,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['status'] ?? '') === '') {
 
             if ($existing) {
                 booking_update($id, $form + ['guests' => $guests], staff_actor());
+
+                // What actually moved, so the email says something useful.
+                $moved = [];
+                foreach ([
+                    'booking_date' => ['Date', $form['date']],
+                    'booking_time' => ['Time', $form['time']],
+                    'guests'       => ['Guests', (string) $guests],
+                    'seating'      => ['Seating', $form['seating']],
+                ] as $column => [$label, $now]) {
+                    if ((string) $existing[$column] !== (string) $now) {
+                        $moved[] = $label . ': ' . $existing[$column] . ' → ' . $now;
+                    }
+                }
+                if ($moved) {
+                    mail_booking_change_alert(booking_get($id) ?? $existing, 'edited', $moved);
+                }
+
                 if ($override) {
                     booking_audit($id, 'capacity_override', $existing['status'], $existing['status'], staff_actor());
                 }

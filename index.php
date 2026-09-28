@@ -13,7 +13,7 @@ $pageSchema = [
         'Where is Cilantro Café?' =>
             'Cilantro Café is at Unit 7, Newpark Centre, Newtownpark Avenue, Blackrock, Co. Dublin, A94 W956.',
         'Do you take bookings?' =>
-            'Yes. You can book a table through the website, and we will be in touch if we cannot fit you in at that time. For groups larger than ten, get in touch directly.',
+            'Yes, through the website. We take two bookings an hour for up to four people each, so weekends are extremely limited and midweek is easier. For a bigger group, get in touch directly.',
         'Do you serve breakfast and brunch?' =>
             'Yes. Breakfast is served until 12:00, and the Morning Munchie and chilaquiles are available all day. The menu includes pancakes, French toast, huevos rancheros, a breakfast burrito, avocado toast and a full Irish.',
         "Is there a children's menu?" =>
@@ -21,7 +21,7 @@ $pageSchema = [
         'Do you cater for allergies?' =>
             'Allergen codes are listed next to every dish on our menu, covering gluten, dairy, eggs, fish, nuts, sesame, soy and sulphites. Tell a member of staff about any dietary needs when you order.',
         'Can you sit outside?' =>
-            'Yes, there are tables out front when the weather allows, as well as booth and table seating inside. You can state a seating preference when you book.',
+            'Yes, there are tables out front when the weather allows, as well as stools and tables inside. The stools are our best seats. You can state a seating preference when you book.',
     ]),
 ];
 require __DIR__ . '/includes/header.php';
@@ -72,10 +72,10 @@ $featured = [
 
 <section class="section inside">
     <div class="container inside-grid">
-        <img class="inside-photo" src="images/interior.jpg" alt="Inside the café: white tables, wooden chairs and a green booth" width="1600" height="949" loading="lazy">
+        <img class="inside-photo" src="images/interior.jpg" alt="Inside the café: white tables, wooden chairs and stools along the counter" width="1600" height="949" loading="lazy">
         <div class="inside-text">
             <h2>Come in and sit down</h2>
-            <p>Booth seating and wooden tables inside, and a few tables out front when the weather allows. Bring the kids, there is a menu for under 13s.</p>
+            <p>Stools and wooden tables inside, and a few tables out front when the weather allows. Bring the kids, there is a menu for under 13s.</p>
             <a class="btn btn-green" href="booking.php">Book a table</a>
         </div>
     </div>

@@ -29,6 +29,14 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
     <div class="booking-side">
         <h1>Book a table</h1>
         <p>Send us your details and we'll hold a table for you. We'll contact you if we can't fit you in at that time.</p>
+
+        <p class="booking-notice"><strong>Weekends are extremely limited.</strong>
+            We only take <?= (int) $booking['max_bookings_per_hour'] ?> bookings an hour, so Saturday and
+            Sunday fill up fast. Midweek is much easier.</p>
+
+        <p>When we are busy — usually at weekends — tables are held for
+            <?= (int) ($booking['table_minutes'] ?? 60) ?> minutes.</p>
+
         <p>More than <?= (int) $booking['max_guests'] ?> people?
             <?php if ($site['phone']): ?>
                 Call us on <a href="tel:<?= e(preg_replace('/[^0-9+]/', '', $site['phone'])) ?>"><?= e($site['phone']) ?></a>.
@@ -126,6 +134,7 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
                                     <option value="<?= e($option) ?>" <?= $old['seating'] === $option ? 'selected' : '' ?>><?= e($option) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <p class="field-hint">The stools inside are the best seats in the place. We have no booths.</p>
                         </div>
                     </div>
                 </fieldset>

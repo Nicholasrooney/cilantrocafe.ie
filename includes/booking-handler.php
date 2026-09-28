@@ -176,7 +176,7 @@ function booking_slot_availability(string $date, int $guests): array
         return capacity_slot_availability(
             $date,
             $daySlots,
-            (int) ($booking['max_per_slot'] ?? 0),
+            (int) ($booking['max_bookings_per_hour'] ?? 0),
             max(1, $guests)
         );
     } catch (Throwable $e) {

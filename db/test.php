@@ -20,7 +20,7 @@ echo "Cilantro Café — booking data layer tests\n";
 echo str_repeat('=', 64) . "\n";
 
 $pdo = fresh_database();
-$GLOBALS['booking']['max_per_slot'] = 20;
+$GLOBALS['booking']['max_bookings_per_hour'] = 2;
 
 // ---------------------------------------------------------------- phone keys
 
@@ -65,7 +65,7 @@ section('Bookings');
 $id = booking_create([
     'name' => 'Nick Rooney', 'phone' => '0868786928', 'email' => 'new@example.com',
     'date' => '2026-10-01', 'time' => '13:00', 'guests' => 4,
-    'seating' => 'Booth inside', 'notes' => 'window if possible', 'source' => 'website',
+    'seating' => 'Stools inside', 'notes' => 'window if possible', 'source' => 'website',
 ]);
 check('booking created', $id > 0, true);
 
@@ -95,93 +95,69 @@ check('edit is audited',       str_contains(booking_history($id)[0]['action'], '
 
 // ---------------------------------------------------------------- capacity
 
-section('Capacity — counting covers');
+section('Capacity — two bookings an hour');
 
 $pdo = fresh_database();
-$GLOBALS['booking']['capacity_mode'] = 'covers';
-$GLOBALS['booking']['max_per_slot']  = 20;
+$GLOBALS['booking']['max_bookings_per_hour'] = 2;
 
-booking_create([
-    'name' => 'Party A', 'phone' => '0861000001', 'email' => 'a@example.com',
-    'date' => '2026-10-02', 'time' => '13:00', 'guests' => 8, 'seating' => '', 'notes' => '',
-]);
-booking_create([
-    'name' => 'Party B', 'phone' => '0861000002', 'email' => 'b@example.com',
-    'date' => '2026-10-02', 'time' => '13:00', 'guests' => 8, 'seating' => '', 'notes' => '',
-]);
-
-check('covers counted', capacity_used('2026-10-02')['13:00'], 16);
-check('remaining seats', capacity_remaining('2026-10-02', '13:00', 20), 4);
-
-throws('overbooking is refused', CapacityExceeded::class, function () {
-    booking_create([
-        'name' => 'Party C', 'phone' => '0861000003', 'email' => 'c@example.com',
-        'date' => '2026-10-02', 'time' => '13:00', 'guests' => 6, 'seating' => '', 'notes' => '',
-    ]);
-});
-
-$fits = booking_create([
-    'name' => 'Party D', 'phone' => '0861000004', 'email' => 'd@example.com',
-    'date' => '2026-10-02', 'time' => '13:00', 'guests' => 4, 'seating' => '', 'notes' => '',
-]);
-check('a party that fits is accepted', $fits > 0, true);
-check('slot now full', capacity_remaining('2026-10-02', '13:00', 20), 0);
-
-$override = booking_create([
-    'name' => 'Party E', 'phone' => '0861000005', 'email' => 'e@example.com',
-    'date' => '2026-10-02', 'time' => '13:00', 'guests' => 4, 'seating' => '', 'notes' => '',
-], false, 'staff');
-check('staff can deliberately overbook', $override > 0, true);
-
-booking_set_status($fits, 'cancelled', 'staff');
-check('a cancellation frees its seats', capacity_remaining('2026-10-02', '13:00', 24), 4);
-
-$avail = capacity_slot_availability('2026-10-02', ['12:00', '13:00'], 20, 2);
-check('empty slot offered',  $avail['12:00'], true);
-check('full slot withheld',  $avail['13:00'], false);
-
-section('Capacity — counting tables (the café’s actual setting)');
-
-$pdo = fresh_database();
-$GLOBALS['booking']['capacity_mode'] = 'tables';
-$GLOBALS['booking']['max_per_slot']  = 15;
-
-// Fourteen parties, deliberately of wildly different sizes: in table mode the
-// sizes must not matter, only the number of bookings.
-for ($i = 1; $i <= 14; $i++) {
-    booking_create([
-        'name' => "Table $i", 'phone' => '08610001' . str_pad((string) $i, 2, '0', STR_PAD_LEFT),
-        'email' => "t$i@example.com",
-        'date' => '2026-10-05', 'time' => '13:00', 'guests' => ($i % 9) + 1,
-        'seating' => '', 'notes' => '',
-    ]);
+function party(string $time, int $guests = 2, bool $enforce = true, string $phoneTail = ''): int
+{
+    static $n = 0;
+    $n++;
+    return booking_create([
+        'name' => "Party $n", 'phone' => '08610000' . str_pad((string) $n, 2, '0', STR_PAD_LEFT),
+        'email' => "p$n@example.com", 'date' => '2026-10-02', 'time' => $time,
+        'guests' => $guests, 'seating' => 'Stools inside', 'notes' => '',
+    ], $enforce, 'website');
 }
 
-check('bookings counted, not heads', capacity_used('2026-10-05')['13:00'], 14);
-check('one table left',              capacity_remaining('2026-10-05', '13:00', 15), 1);
+$first = party('13:00', 4);
+check('first booking of the hour', $first > 0, true);
 
-$last = booking_create([
-    'name' => 'Table 15', 'phone' => '0861000115', 'email' => 't15@example.com',
-    'date' => '2026-10-05', 'time' => '13:00', 'guests' => 9, 'seating' => '', 'notes' => '',
-]);
-check('a party of nine still takes just one table', $last > 0, true);
-check('now full', capacity_remaining('2026-10-05', '13:00', 15), 0);
+$second = party('13:30', 1);
+check('13:30 shares the 13:00 hour and is the second', $second > 0, true);
+check('the hour is now counted as two', capacity_used('2026-10-02')['13'], 2);
+check('nothing left in that hour', capacity_remaining('2026-10-02', '13:00', 2), 0);
+check('and the half past is just as full', capacity_remaining('2026-10-02', '13:30', 2), 0);
 
-throws('the sixteenth is refused', CapacityExceeded::class, function () {
-    booking_create([
-        'name' => 'Table 16', 'phone' => '0861000116', 'email' => 't16@example.com',
-        'date' => '2026-10-05', 'time' => '13:00', 'guests' => 1, 'seating' => '', 'notes' => '',
-    ]);
+throws('a third booking at 13:00 is refused', CapacityExceeded::class, function () {
+    party('13:00', 2);
+});
+throws('a third at 13:30 is refused too — same hour', CapacityExceeded::class, function () {
+    party('13:30', 2);
 });
 
-check('a single diner costs one table', capacity_units(1), 1);
-check('a party of ten also costs one', capacity_units(10), 1);
-check('in covers mode a party of ten costs ten', capacity_units(10, 'covers'), 10);
-check('the noun follows the mode', capacity_noun('tables', 3), 'tables');
-check('and is singular for one',   capacity_noun('tables', 1), 'table');
+check('the next hour is free', capacity_remaining('2026-10-02', '14:00', 2), 2);
+$third = party('14:00', 2);
+check('14:00 books fine', $third > 0, true);
 
-// Back to the default for whatever follows.
-$GLOBALS['booking']['capacity_mode'] = 'tables';
+// Party size must not matter: two singles fill an hour as surely as two fours.
+check('a single diner still costs a whole booking', capacity_remaining('2026-10-02', '14:00', 2), 1);
+
+$override = party('13:00', 3, false);
+check('staff can still overbook deliberately', $override > 0, true);
+
+booking_set_status($first, 'cancelled', 'staff');
+check('a cancellation frees one of the hour', capacity_remaining('2026-10-02', '13:00', 2), 0);
+booking_set_status($override, 'cancelled', 'staff');
+check('and another frees the next', capacity_remaining('2026-10-02', '13:30', 2), 1);
+
+$avail = capacity_slot_availability('2026-10-02', ['13:00', '13:30', '15:00'], 2);
+check('half-full hour still offered',  $avail['13:00'], true);
+check('same for its half past',        $avail['13:30'], true);
+check('an untouched hour is offered',  $avail['15:00'], true);
+
+party('15:00', 2);
+party('15:30', 2);
+$avail = capacity_slot_availability('2026-10-02', ['15:00', '15:30', '16:00'], 2);
+check('a full hour is withheld',            $avail['15:00'], false);
+check('including its half past',            $avail['15:30'], false);
+check('the hour after is still offered',    $avail['16:00'], true);
+
+check('hour of 09:30 is 09', capacity_hour('09:30'), '09');
+check('hour of 16:00 is 16', capacity_hour('16:00'), '16');
+check('the noun is plural by default', capacity_noun(2), 'bookings');
+check('and singular for one',          capacity_noun(1), 'booking');
 
 // ---------------------------------------------------------------- GDPR
 
