@@ -76,7 +76,9 @@ $form = [
     'date'    => $existing['booking_date'] ?? ($_GET['date'] ?? (new DateTimeImmutable('today', $tz))->format('Y-m-d')),
     'time'    => $existing['booking_time'] ?? ($booking['times'][0] ?? '12:00'),
     'guests'  => (string) ($existing['guests'] ?? 2),
-    'seating' => $existing['seating']      ?? ($booking['seating'][0] ?? ''),
+    // Relabelled so an older booking lands on a real option instead of
+    // silently switching to the first one when it is saved.
+    'seating' => $existing ? booking_seating_label($existing['seating']) : ($booking['seating'][0] ?? ''),
     'notes'   => $existing['notes']        ?? '',
     'source'  => $existing['source']       ?? 'phone',
 ];

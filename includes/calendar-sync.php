@@ -96,7 +96,7 @@ function calendar_build_event(array $data, array $config): array
         'Name:    ' . $data['name'],
         'Phone:   ' . $data['phone'],
         'Email:   ' . $data['email'],
-        'Seating: ' . $data['seating'],
+        'Seating: ' . booking_seating_label($data['seating'] ?? ''),
     ];
     if (trim((string) ($data['notes'] ?? '')) !== '') {
         $lines[] = '';

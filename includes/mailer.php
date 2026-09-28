@@ -84,7 +84,7 @@ function mail_booking_confirmation(array $b): bool
     ];
 
     if (!empty($b['seating'])) {
-        $lines[] = "  " . $b['seating'];
+        $lines[] = "  " . booking_seating_label($b['seating']);
     }
     if (!empty($b['notes'])) {
         $lines[] = "  Your note: " . $b['notes'];
@@ -170,7 +170,7 @@ function mail_booking_alert(array $b): bool
         "Name:    " . $b['name'],
         "Phone:   " . $b['phone'],
         "Email:   " . ($b['email'] ?: '—'),
-        "Seating: " . ($b['seating'] ?: 'No preference'),
+        "Seating: " . booking_seating_label($b['seating'] ?? ''),
     ];
 
     if (!empty($b['notes'])) {
@@ -217,7 +217,7 @@ function mail_booking_change_alert(array $b, string $what, array $changes = []):
         "Name:    " . $b['name'],
         "Phone:   " . ($b['phone'] ?: '—'),
         "Email:   " . ($b['email'] ?: '—'),
-        "Seating: " . ($b['seating'] ?: 'No preference'),
+        "Seating: " . booking_seating_label($b['seating'] ?? ''),
     ];
 
     if ($changes) {

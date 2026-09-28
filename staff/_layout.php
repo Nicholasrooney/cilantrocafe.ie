@@ -107,7 +107,7 @@ function staff_booking_card(array $b): void
         <div class="bk-who">
             <h3><?= e($b['name']) ?></h3>
             <p class="bk-meta">
-                <?= e($b['seating'] ?: 'No preference') ?>
+                <?= e(booking_seating_label($b['seating'] ?? '')) ?>
                 <?php if ($b['source'] !== 'website'): ?>
                     · <?= e(str_replace('_', ' ', $b['source'])) ?>
                 <?php endif; ?>

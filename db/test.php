@@ -93,6 +93,24 @@ check('edit applied (time)',   $row['booking_time'], '14:00');
 check('edit applied (guests)', (int) $row['guests'], 6);
 check('edit is audited',       str_contains(booking_history($id)[0]['action'], 'edited'), true);
 
+// ---------------------------------------------------------------- seating
+
+section('Seating labels');
+
+check('a booth from the old form now reads as stools', booking_seating_label('Booth inside'), 'Stools');
+check('the longer stools wording is shortened',        booking_seating_label('Stools inside'), 'Stools');
+check('and the longer table wording',                  booking_seating_label('Table outside'), 'Table');
+check('current values are left alone',                 booking_seating_label('Stools'), 'Stools');
+check('as is table',                                   booking_seating_label('Table'), 'Table');
+check('no preference stays',                           booking_seating_label('No preference'), 'No preference');
+check('nothing stored reads as no preference',         booking_seating_label(''), 'No preference');
+check('matching ignores case',                         booking_seating_label('BOOTH INSIDE'), 'Stools');
+check('anything unexpected is shown as it was',        booking_seating_label('By the window'), 'By the window');
+
+foreach ($GLOBALS['booking']['seating'] as $option) {
+    check("the form's own \"$option\" needs no relabelling", booking_seating_label($option), $option);
+}
+
 // ---------------------------------------------------------------- capacity
 
 section('Capacity — two bookings an hour');

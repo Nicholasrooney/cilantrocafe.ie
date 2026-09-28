@@ -134,7 +134,7 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
                                     <option value="<?= e($option) ?>" <?= $old['seating'] === $option ? 'selected' : '' ?>><?= e($option) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="field-hint">The stools inside are the best seats in the place. We have no booths.</p>
+                            <p class="field-hint">The stools are the best seats in the place. We have no booths.</p>
                         </div>
                     </div>
                 </fieldset>

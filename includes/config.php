@@ -67,7 +67,7 @@ $booking = [
     'days_ahead'        => 60,  // how far in advance people can book
 
     // There are no booths. Stools are the seats to have, so they lead.
-    'seating'           => ['Stools inside', 'Table outside', 'No preference'],
+    'seating'           => ['Stools', 'Table', 'No preference'],
 
     // How long a table is held when the café is busy, which is usually at
     // weekends. Shown on the booking page and in the confirmation email.
@@ -340,6 +340,33 @@ function asset(string $path): string
     $file  = __DIR__ . '/../' . $path;
     $stamp = is_file($file) ? filemtime($file) : time();
     return '/' . $path . '?v=' . $stamp;
+}
+
+/**
+ * How a stored seating value should read now.
+ *
+ * Bookings taken before the seating options were renamed still hold the old
+ * wording — "Booth inside" from when booths were on the form, and the longer
+ * "Stools inside" / "Table outside". They are relabelled here so old bookings
+ * read the same as new ones, whether or not db/relabel-seating.php has been
+ * run against the live database.
+ */
+function booking_seating_label(?string $seating): string
+{
+    $seating = trim((string) $seating);
+    if ($seating === '') {
+        return 'No preference';
+    }
+
+    $legacy = [
+        'booth inside'  => 'Stools',
+        'booth'         => 'Stools',
+        'stools inside' => 'Stools',
+        'table outside' => 'Table',
+        'table inside'  => 'Table',
+    ];
+
+    return $legacy[mb_strtolower($seating)] ?? $seating;
 }
 
 /**
