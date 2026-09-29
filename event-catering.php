@@ -150,7 +150,6 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                     <?php foreach ($cat_packages as $key => $pkg): ?>
                         <option value="<?= e($key) ?>"
                                 <?php if (show_prices() && $pkg['price'] !== null): ?>data-price="<?= e(number_format($pkg['price'], 2, '.', '')) ?>"<?php endif; ?>
-                                data-includes="<?= e($pkg['includes']) ?>"
                                 <?= $cat_card['package'] === $key ? 'selected' : '' ?>><?= e($pkg['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
@@ -175,7 +174,6 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                     <span class="pc-result-label">Your package</span>
                     <span class="pc-price" data-pc-name><?= e($cardPackage['name']) ?></span>
                 <?php endif; ?>
-                <span class="pc-includes" data-pc-includes><?= e($cardPackage['includes']) ?></span>
             </div>
 
             <div class="pc-capture">

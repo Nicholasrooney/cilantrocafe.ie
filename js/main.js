@@ -348,7 +348,6 @@ function cookieChoice(set) {
   var guestEl = card.querySelector('[data-pc-guests]');
   var priceEl = card.querySelector('[data-pc-price]');
   var totalEl = card.querySelector('[data-pc-total]');
-  var inclEl  = card.querySelector('[data-pc-includes]');
   var nameEl  = card.querySelector('[data-pc-name]');
   if (!range || !select) return;
 
@@ -366,7 +365,6 @@ function cookieChoice(set) {
 
     if (guestEl) guestEl.textContent = guests;
     range.setAttribute('aria-valuetext', guests + ' guests');
-    if (inclEl && opt) inclEl.textContent = opt.dataset.includes || '';
     if (nameEl && opt) nameEl.textContent = opt.textContent.trim();
 
     // Prices switched off in config: the card names the package instead.
