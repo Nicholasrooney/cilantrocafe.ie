@@ -61,6 +61,19 @@ staff_head($day->format('D j M'), 'day');
 
 <?php if ($flash): ?><p class="flash"><?= e($flash) ?></p><?php endif; ?>
 
+<?php
+// A date taken off the public form still shows here, with its bookings —
+// staff can add one by hand if they want to.
+require_once __DIR__ . '/../includes/hours.php';
+$blockedNote = hours_blocked_message($date);
+// Only worth repeating the message if somebody wrote a specific reason.
+$blockedWhy  = trim((string) ($booking['no_bookings_dates'][$date] ?? ''));
+?>
+<?php if ($blockedNote !== null): ?>
+    <p class="flash flash-warn">Closed to new online bookings.<?= $blockedWhy !== '' ? ' ' . e($blockedWhy) : '' ?>
+        You can still add one here by hand.</p>
+<?php endif; ?>
+
 <div class="dayhead">
     <a class="nav-arrow" href="?date=<?= e($day->modify('-1 day')->format('Y-m-d')) ?>" aria-label="Previous day">&#8249;</a>
     <div class="dayhead-mid">

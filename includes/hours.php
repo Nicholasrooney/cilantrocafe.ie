@@ -181,6 +181,35 @@ function hours_schema(?array $service = null): array
 }
 
 /**
+ * Is this a date we have stopped taking new bookings for?
+ *
+ * Separate from the weekly closed days: the café may well be open and simply
+ * full, so the wording differs and the day still shows in the staff diary.
+ *
+ * @return string|null  the message to show, or null if bookings are open
+ */
+function hours_blocked_message(string $date, ?array $blocked = null): ?string
+{
+    $blocked = $blocked ?? ($GLOBALS['booking']['no_bookings_dates'] ?? []);
+    $default = 'We are not taking any more bookings that day.';
+
+    // Accepts either a plain list of dates or a date => message map.
+    if (array_key_exists($date, $blocked)) {
+        return trim((string) $blocked[$date]) !== '' ? (string) $blocked[$date] : $default;
+    }
+
+    return in_array($date, $blocked, true) ? $default : null;
+}
+
+/**
+ * Can the public form offer this date at all?
+ */
+function hours_takes_bookings(string $date): bool
+{
+    return hours_is_open($date) && hours_blocked_message($date) === null;
+}
+
+/**
  * The next date the café is actually open, for pointing people somewhere
  * useful when they land on a closed day.
  */
@@ -194,7 +223,9 @@ function hours_next_open_date(string $from, ?array $service = null): ?string
 
     for ($i = 0; $i < 14; $i++) {
         $candidate = $day->modify("+$i days")->format('Y-m-d');
-        if (hours_is_open($candidate, $service)) {
+        // Skip days we have stopped taking bookings for: suggesting one would
+        // send people straight into another refusal.
+        if (hours_is_open($candidate, $service) && hours_blocked_message($candidate) === null) {
             return $candidate;
         }
     }

@@ -89,6 +89,32 @@ check('weekend has two more slots than a weekday', count($sat) - count($tue), 2)
 
 check('next open day after Monday is Tuesday', hours_next_open_date('2026-09-14'), '2026-09-15');
 
+// Dates taken off the booking form
+$savedBlocked = $GLOBALS['booking']['no_bookings_dates'];
+$GLOBALS['booking']['no_bookings_dates'] = ['2026-10-03' => '', '2026-10-04' => 'Private function.'];
+
+check('a blocked date gives the standard wording',
+    hours_blocked_message('2026-10-03'), 'We are not taking any more bookings that day.');
+check('a custom reason is used when given',
+    hours_blocked_message('2026-10-04'), 'Private function.');
+check('any other date is unaffected',   hours_blocked_message('2026-10-05'), null);
+check('a blocked date takes no bookings', hours_takes_bookings('2026-10-03'), false);
+check('but the cafe is still open that day', hours_is_open('2026-10-03'), true);
+check('an ordinary open day still takes them', hours_takes_bookings('2026-10-06'), true);
+check('a closed Monday takes none either',  hours_takes_bookings('2026-10-05'), false);
+
+// Landing on the 3rd should be pointed past the 4th, not into it.
+check('the next bookable day skips both blocked days',
+    hours_next_open_date('2026-10-03'), '2026-10-06');
+
+$GLOBALS['booking']['no_bookings_dates'] = ['2026-10-03'];
+check('a plain list of dates works too',
+    hours_blocked_message('2026-10-03'), 'We are not taking any more bookings that day.');
+
+$GLOBALS['booking']['no_bookings_dates'] = $savedBlocked;
+check('this weekend is the one blocked',
+    array_keys($GLOBALS['booking']['no_bookings_dates']), ['2026-10-03', '2026-10-04']);
+
 $display = hours_display();
 check('closed day shown as Closed',  $display['Monday'], 'Closed');
 check('consecutive days grouped',    isset($display['Tuesday to Friday']), true);

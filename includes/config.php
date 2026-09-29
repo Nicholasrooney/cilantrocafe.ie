@@ -61,6 +61,22 @@ $booking = [
     // so the last slot is 15:00; weekends close at 17:00, so it is 16:00.
     'last_booking_before_close' => 60,
 
+    /*
+     * One-off dates the café will not take new bookings for, on top of the
+     * normal closed days. Use it for a day that is already full, a private
+     * function, or a closure.
+     *
+     * Bookings already taken on these dates are untouched, and staff can still
+     * add one by hand in the diary — this only stops the public form.
+     *
+     * Give a date an empty message for the standard wording, or write your own:
+     *     '2026-12-25' => 'We are closed for Christmas.',
+     */
+    'no_bookings_dates' => [
+        '2026-10-03' => '',   // Saturday
+        '2026-10-04' => '',   // Sunday
+    ],
+
     // Filled in below from service_hours. Do not edit by hand.
     'times' => [],
     'max_guests'        => 4,   // bigger groups are asked to get in touch

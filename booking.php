@@ -112,7 +112,7 @@ $slots     = booking_slot_availability($shownDate, (int) $old['guests']);
                                 <?php endforeach; ?>
                             </select>
                             <p class="slot-note" id="slot-note" <?= $slots ? 'hidden' : '' ?>>
-                                <?= $slots ? '' : 'We are closed that day — pick another date.' ?>
+                                <?= $slots ? '' : e(booking_day_note($shownDate)) ?>
                             </p>
                             <?= field_error($errors, 'time') ?>
                         </div>

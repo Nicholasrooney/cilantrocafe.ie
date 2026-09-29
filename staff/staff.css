@@ -418,3 +418,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); }
   background: none; border: 0; padding: 0.25rem 0; cursor: pointer;
   font: inherit; font-size: 0.88rem; color: var(--bad); text-decoration: underline;
 }
+
+/* A day taken off the public form — noticeable, not alarming. */
+.flash-warn { background: var(--warn-bg); border-color: #edd9a8; color: var(--warn); }

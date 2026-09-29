@@ -36,14 +36,17 @@ if ($parsed < $today || $parsed > $lastDay) {
     exit;
 }
 
-// Closed that day? Say so, and point at the next day we are open.
+// Closed that day, or not taking any more? Say which, and point at the next
+// date we can actually take one.
 $daySlots = hours_slots_for_date($date);
-if (!$daySlots) {
+$blocked  = hours_blocked_message($date);
+
+if (!$daySlots || $blocked !== null) {
     echo json_encode([
-        'date'   => $date,
-        'closed' => true,
-        'slots'  => [],
-        'message' => 'We are closed that day.',
+        'date'      => $date,
+        'closed'    => true,
+        'slots'     => [],
+        'message'   => $blocked ?? 'We are closed that day.',
         'next_open' => hours_next_open_date($date),
     ]);
     exit;

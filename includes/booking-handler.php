@@ -78,7 +78,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // and weekends run an hour later than weekdays.
     $daySlots = !isset($errors['date']) ? hours_slots_for_date($old['date']) : [];
 
-    if (!isset($errors['date']) && !$daySlots) {
+    $blocked = !isset($errors['date']) ? hours_blocked_message($old['date']) : null;
+
+    if ($blocked !== null) {
+        $nextOpen = hours_next_open_date($old['date']);
+        $errors['date'] = $blocked
+            . ($nextOpen
+                ? ' The next day we can take one is '
+                  . (new DateTimeImmutable($nextOpen, new DateTimeZone('Europe/Dublin')))->format('l j F') . '.'
+                : '');
+    } elseif (!isset($errors['date']) && !$daySlots) {
         $nextOpen = hours_next_open_date($old['date']);
         $errors['date'] = 'We are closed that day.'
             . ($nextOpen
@@ -158,6 +167,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 /**
+ * What to say when no times are offered for a date: closed, or simply not
+ * taking any more that day.
+ */
+function booking_day_note(string $date): string
+{
+    $blocked = hours_blocked_message($date);
+    if ($blocked !== null) {
+        return $blocked . ' Please pick another date.';
+    }
+    return 'We are closed that day — pick another date.';
+}
+
+/**
  * Which time slots still have room, for the date being shown.
  *
  * This only decides what the form offers. The binding check happens inside the
@@ -168,7 +190,7 @@ function booking_slot_availability(string $date, int $guests): array
     global $booking;
 
     $daySlots = hours_slots_for_date($date);
-    if (!$daySlots) {
+    if (!$daySlots || hours_blocked_message($date) !== null) {
         return [];
     }
 
