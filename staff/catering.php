@@ -97,7 +97,9 @@ staff_head('Catering', 'catering');
             <?php if (!empty($r['location'])): ?>
                 <div><dt>Location</dt><dd><?= e($r['location']) ?></dd></div>
             <?php endif; ?>
-            <div><dt>Package</dt><dd><?= e(catering_package_name($r['package'])) ?></dd></div>
+            <?php if ($r['package'] !== ''): ?>
+                <div><dt>Package</dt><dd><?= e(catering_package_name($r['package'])) ?></dd></div>
+            <?php endif; ?>
             <?php if ($r['price_per_person'] !== null): ?>
                 <div><dt>Shown</dt><dd>from <?= e(catering_money((float) $r['price_per_person'])) ?> pp<?php
                     if ($r['estimate_total'] !== null) { echo ' · around ' . e(catering_money((float) $r['estimate_total'], false)); }

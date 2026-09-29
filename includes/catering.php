@@ -369,8 +369,11 @@ function catering_summary_lines(array $d): array
     $lines = [
         'Occasion: ' . catering_occasion_label($d['occasion'] ?? ''),
         'Guests:   ' . (int) $d['guests'],
-        'Package:  ' . catering_package_name($d['package'] ?? ''),
     ];
+
+    if (($d['package'] ?? '') !== '') {
+        $lines[] = 'Package:  ' . catering_package_name($d['package']);
+    }
 
     if (!empty($d['location'])) {
         $lines[] = 'Location: ' . $d['location'];

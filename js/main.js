@@ -336,16 +336,15 @@ function cookieChoice(set) {
   }
 })();
 
-// Catering quote card: keeps the guest count in step, and lines the package
-// up with the occasion. Works as a plain form without any of this.
+// Catering quote card: keeps the guest count beside the slider in step.
+// Works as a plain form without any of this.
 (function () {
   var card = document.querySelector('[data-price-card]');
   if (!card) return;
 
   var range   = card.querySelector('.pc-range');
-  var select  = card.querySelector('.pc-select');
   var guestEl = card.querySelector('[data-pc-guests]');
-  if (!range || !select) return;
+  if (!range) return;
 
   function update() {
     var guests = parseInt(range.value, 10) || 0;
@@ -353,20 +352,8 @@ function cookieChoice(set) {
     range.setAttribute('aria-valuetext', guests + ' guests');
   }
 
-  card.addEventListener('change', function (e) {
-    if (e.target.name === 'occasion' && e.target.dataset.package) {
-      select.value = e.target.dataset.package;
-    }
-    update();
-  });
+  card.addEventListener('change', update);
   range.addEventListener('input', update);
-
-  // "Choose this package" buttons further down the page.
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-price-package]');
-    if (!btn) return;
-    select.value = btn.dataset.pricePackage;
-  });
 
   update();
 })();
@@ -400,7 +387,6 @@ function cookieChoice(set) {
     card.addEventListener('change', function (e) {
       var t = e.target;
       if (t.name === 'occasion') track('catering_occasion_select', { label: t.value });
-      if (t.name === 'package')  track('catering_package_select',  { label: t.value });
       // 'change' fires once when the slider is let go, not on every step.
       if (t.name === 'guests')   track('catering_guests_set', { guests: parseInt(t.value, 10) || 0 });
       // Only that a location was given — never what it says, which could be an address.

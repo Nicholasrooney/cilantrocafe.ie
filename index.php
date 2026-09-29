@@ -81,6 +81,7 @@ $featured = [
     </div>
 </section>
 
+<?php if (!empty($catering['enabled'])): ?>
 <section class="section catering-teaser" aria-labelledby="catering-teaser-title">
     <div class="container catering-teaser-inner">
         <div>
@@ -90,6 +91,7 @@ $featured = [
         <a class="btn btn-light" href="event-catering.php">Get a catering quote</a>
     </div>
 </section>
+<?php endif; ?>
 
 <section class="section visit">
     <div class="container visit-grid">

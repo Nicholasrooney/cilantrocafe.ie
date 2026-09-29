@@ -222,6 +222,16 @@ $analytics = [
  * "price on request" instead of a wrong number.
  */
 $catering = [
+    /*
+     * Is the catering page live?
+     *
+     * false takes event-catering.php offline: it answers 404, the nav link
+     * and the home page panel disappear, and it drops out of the sitemap.
+     * Nothing is deleted and enquiries already taken stay in the staff area.
+     * Set it back to true to put the page back.
+     */
+    'enabled' => false,
+
     // Who is emailed when a CATERING ENQUIRY comes in.
     'notify_email' => [
         'nicholas.rooney2010@gmail.com',

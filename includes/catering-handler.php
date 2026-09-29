@@ -36,14 +36,13 @@ $cat_errors   = [];
 $cat_card = [
     'occasion' => 'birthday',
     'guests'   => 50,
-    'package'  => 'taco_bar',
     'location' => '',
     'contact'  => '',
 ];
 
 $cat_old = [
     'name' => '', 'phone' => '', 'email' => '', 'occasion' => '', 'event_date' => '',
-    'guests' => '', 'package' => '', 'fulfilment' => '', 'delivery_address' => '', 'notes' => '',
+    'guests' => '', 'fulfilment' => '', 'delivery_address' => '', 'notes' => '',
 ];
 $cat_consent = false;
 
@@ -70,18 +69,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $occasion = 'other';
         }
 
-        $package = (string) ($_POST['package'] ?? '');
-        if (!isset($cat_packages[$package])) {
-            $package = $catering['occasions'][$occasion]['package'];
-        }
-
         $guests   = catering_clamp_guests((int) ($_POST['guests'] ?? 50));
         $location = trim(preg_replace('/\s+/', ' ', (string) ($_POST['location'] ?? '')));
         $raw      = trim((string) ($_POST['contact'] ?? ''));
         $contact  = catering_parse_contact($raw);
 
         $cat_card = [
-            'occasion' => $occasion, 'guests' => $guests, 'package' => $package,
+            'occasion' => $occasion, 'guests' => $guests,
             'location' => $location, 'contact' => $raw,
         ];
 
@@ -92,18 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$contact) {
             $cat_errors['contact'] = 'Enter a phone number or an email address so we can send you a quote.';
         } elseif (!$cat_errors) {
-            // Only record a price if the visitor was actually shown one.
-            $price  = show_prices() ? $cat_packages[$package]['price'] : null;
+            // No package is asked for any more, so none is recorded and
+            // there is nothing to price.
             $record = [
-                'source'           => 'price_card',
-                'phone'            => $contact['phone'],
-                'email'            => $contact['email'],
-                'occasion'         => $occasion,
-                'guests'           => $guests,
-                'location'         => $location,
-                'package'          => $package,
-                'price_per_person' => $price,
-                'estimate_total'   => catering_estimate($price, $guests),
+                'source'   => 'price_card',
+                'phone'    => $contact['phone'],
+                'email'    => $contact['email'],
+                'occasion' => $occasion,
+                'guests'   => $guests,
+                'location' => $location,
             ];
         }
     } else {
@@ -129,10 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!isset($catering['occasions'][$cat_old['occasion']])) {
             $cat_errors['occasion'] = 'Choose the occasion.';
-        }
-
-        if (!isset($cat_packages[$cat_old['package']])) {
-            $cat_errors['package'] = 'Choose a package, or "Something else" and tell us in the notes.';
         }
 
         $guests = filter_var($cat_old['guests'], FILTER_VALIDATE_INT);
@@ -167,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$cat_errors) {
-            $price  = show_prices() ? $cat_packages[$cat_old['package']]['price'] : null;
             $record = [
                 'source'            => 'full_form',
                 'name'              => $cat_old['name'],
@@ -176,9 +162,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'occasion'          => $cat_old['occasion'],
                 'event_date'        => $cat_old['event_date'],
                 'guests'            => (int) $guests,
-                'package'           => $cat_old['package'],
-                'price_per_person'  => $price,
-                'estimate_total'    => catering_estimate($price, (int) $guests),
                 'fulfilment'        => $cat_old['fulfilment'],
                 'delivery_address'  => $cat_old['fulfilment'] === 'delivery' ? $cat_old['delivery_address'] : '',
                 'notes'             => $cat_old['notes'],

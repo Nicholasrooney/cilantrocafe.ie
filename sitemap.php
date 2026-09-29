@@ -14,9 +14,13 @@ $pages = [
     'index.php'   => ['weekly',  '1.0'],
     'menu.php'    => ['weekly',  '0.9'],
     'booking.php' => ['monthly', '0.9'],
-    'event-catering.php' => ['monthly', '0.9'],
     'gallery.php' => ['monthly', '0.7'],
 ];
+
+// Only list catering while it is switched on.
+if (!empty($catering['enabled'])) {
+    $pages['event-catering.php'] = ['monthly', '0.9'];
+}
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";

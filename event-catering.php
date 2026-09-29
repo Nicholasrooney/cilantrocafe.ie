@@ -1,4 +1,38 @@
 <?php
+/*
+ * Event catering.
+ *
+ * Switched off for now: $catering['enabled'] is false in config.php, so this
+ * page answers 404, the nav link and the home page panel are hidden, and it is
+ * left out of the sitemap. Nothing is deleted — set it back to true and the
+ * page, the link and the sitemap entry all come back. Enquiries already taken
+ * stay visible in the staff area either way.
+ */
+require_once __DIR__ . '/includes/config.php';
+
+if (empty($catering['enabled'])) {
+    http_response_code(404);
+    $pageTitle       = 'Page not found | Cilantro Café';
+    $pageDescription = 'This page is not available.';
+    $pageRobots      = 'noindex, nofollow';
+    $activePage      = '';
+    require __DIR__ . '/includes/header.php';
+    ?>
+    <section class="page-intro">
+        <div class="container">
+            <h1>Not found</h1>
+            <p>That page is not available at the moment.</p>
+            <p>
+                <a class="btn btn-green" href="index.php">Back to the café</a>
+                <a class="text-link" href="menu.php">See the menu</a>
+            </p>
+        </div>
+    </section>
+    <?php
+    require __DIR__ . '/includes/footer.php';
+    exit;
+}
+
 require __DIR__ . '/includes/catering-handler.php';
 
 $pageTitle       = 'Event Catering Dublin | Mexican Catering in Blackrock | Cilantro Café';
@@ -141,16 +175,6 @@ function cat_error_attrs(array $errors, string $field): string
                 <?php endif; ?>
             </div>
 
-            <div class="pc-block">
-                <label class="pc-step" for="pc-package"><span class="pc-step-num">4</span> Your package</label>
-                <select class="pc-select" id="pc-package" name="package">
-                    <?php foreach ($cat_packages as $key => $pkg): ?>
-                        <option value="<?= e($key) ?>"
-                                <?php if (show_prices() && $pkg['price'] !== null): ?>data-price="<?= e(number_format($pkg['price'], 2, '.', '')) ?>"<?php endif; ?>
-                                <?= $cat_card['package'] === $key ? 'selected' : '' ?>><?= e($pkg['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
 
 
             <div class="pc-capture">
@@ -159,7 +183,6 @@ function cat_error_attrs(array $errors, string $field): string
                          data-track-view="catering_enquiry_submitted"
                          data-source="price_card"
                          data-guests="<?= (int) $cat_sent['guests'] ?>"
-                         data-package="<?= e($cat_sent['package']) ?>"
                          data-occasion="<?= e($cat_sent['occasion']) ?>">
                         <span class="pc-success-icon" aria-hidden="true">&#10003;</span>
                         <h3>Got it — thanks!</h3>
@@ -229,8 +252,8 @@ function cat_error_attrs(array $errors, string $field): string
                             <?php endif; ?>
                         </p>
                     <?php endif; ?>
-                    <a class="btn btn-green" href="#price" data-price-package="<?= e($key) ?>"
-                       data-track="catering_choose_package" data-track-label="<?= e($key) ?>">Choose this package</a>
+                    <a class="btn btn-green" href="#price"
+                       data-track="catering_choose_package" data-track-label="<?= e($key) ?>">Ask about this</a>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -286,12 +309,10 @@ function cat_error_attrs(array $errors, string $field): string
                      data-track-view="catering_enquiry_submitted"
                      data-source="full_form"
                      data-guests="<?= (int) $cat_sent['guests'] ?>"
-                     data-package="<?= e($cat_sent['package']) ?>"
                      data-occasion="<?= e($cat_sent['occasion']) ?>">
                     <h2>Enquiry sent</h2>
                     <p>Thanks — we have your catering enquiry for
-                        <strong><?= (int) $cat_sent['guests'] ?> guests</strong>
-                        (<?= e(catering_package_name($cat_sent['package'])) ?>).</p>
+                        <strong><?= (int) $cat_sent['guests'] ?> guests</strong>.</p>
                     <p>We'll come back to you with a quote. If you gave us your email, a copy is on its way.</p>
                     <a class="btn btn-green" href="menu.php">See the menu</a>
                 </div>
@@ -340,18 +361,6 @@ function cat_error_attrs(array $errors, string $field): string
                                        placeholder="<?= (int) $catering['min_guests'] ?>–<?= (int) $catering['max_guests'] ?>"
                                        value="<?= e($cat_old['guests']) ?>"<?= cat_error_attrs($cat_errors, 'guests') ?>>
                                 <?= cat_field_error($cat_errors, 'guests') ?>
-                            </div>
-                            <div class="field">
-                                <label for="package">Package</label>
-                                <select id="package" name="package" required<?= cat_error_attrs($cat_errors, 'package') ?>>
-                                    <option value="">Choose one</option>
-                                    <?php foreach ($cat_packages as $key => $pkg): ?>
-                                        <option value="<?= e($key) ?>" <?= $cat_old['package'] === $key ? 'selected' : '' ?>>
-                                            <?= e($pkg['name']) ?><?= (show_prices() && $pkg['price'] !== null) ? ' — from ' . e(catering_money($pkg['price'])) . ' pp' : '' ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <?= cat_field_error($cat_errors, 'package') ?>
                             </div>
                         </div>
 
