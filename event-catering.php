@@ -73,9 +73,6 @@ function cat_error_attrs(array $errors, string $field): string
     return isset($errors[$field]) ? ' aria-invalid="true" aria-describedby="' . e($field) . '-error"' : '';
 }
 
-$cardPackage = $cat_packages[$cat_card['package']] ?? reset($cat_packages);
-$cardPrice   = $cardPackage['price'];
-$cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
 ?>
 
 <section class="catering-hero" id="price" aria-labelledby="catering-title">
@@ -155,26 +152,6 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
                 </select>
             </div>
 
-            <div class="pc-result" aria-live="polite">
-                <?php if (show_prices()): ?>
-                    <span class="pc-result-label">Starting price</span>
-                    <span class="pc-price" data-pc-price>
-                        <?php if ($cardPrice === null): ?>
-                            Price on request
-                        <?php else: ?>
-                            <?= e(catering_money($cardPrice)) ?> <small>per person</small>
-                        <?php endif; ?>
-                    </span>
-                    <span class="pc-total" data-pc-total>
-                        <?php if ($cardTotal !== null): ?>
-                            around <?= e(catering_money((float) $cardTotal, false)) ?> for <?= (int) $cat_card['guests'] ?> guests
-                        <?php endif; ?>
-                    </span>
-                <?php else: ?>
-                    <span class="pc-result-label">Your package</span>
-                    <span class="pc-price" data-pc-name><?= e($cardPackage['name']) ?></span>
-                <?php endif; ?>
-            </div>
 
             <div class="pc-capture">
                 <?php if ($cat_sent && ($cat_sent['source'] ?? '') === 'price_card'): ?>
@@ -243,7 +220,6 @@ $cardTotal   = catering_estimate($cardPrice, (int) $cat_card['guests']);
             <?php foreach ($cat_packages as $key => $pkg): ?>
                 <li class="package-card">
                     <h3><?= e($pkg['name']) ?></h3>
-                    <p class="package-includes"><?= e($pkg['includes']) ?></p>
                     <?php if (show_prices()): ?>
                         <p class="package-price">
                             <?php if ($pkg['price'] === null): ?>

@@ -852,30 +852,6 @@ a:hover { color: var(--fascia-deep); }
 }
 .pc-select:focus { border-color: var(--fascia); outline: none; }
 
-.pc-result {
-  margin: 1.2rem 0 0;
-  padding: 1rem 1.1rem;
-  background: var(--wall);
-  border-left: 4px solid var(--fascia);
-  border-radius: 10px;
-}
-.pc-result-label {
-  display: block;
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.pc-price {
-  display: block;
-  font-family: var(--serif);
-  font-size: 2.05rem;
-  line-height: 1.15;
-  color: var(--fascia-deep);
-}
-.pc-price small { font-family: var(--sans); font-size: 0.95rem; color: var(--muted); }
-.pc-total { display: block; margin-top: 0.1rem; font-weight: 600; }
 
 .pc-capture { margin-top: 1.15rem; }
 .pc-prompt { display: block; margin: 0 0 0.5rem; font-weight: 500; font-size: 0.97rem; }
@@ -953,7 +929,6 @@ a:hover { color: var(--fascia-deep); }
   padding: 1.35rem;
 }
 .package-card h3 { margin-bottom: 0.35rem; }
-.package-includes { color: var(--muted); font-size: 0.97rem; flex: 1; }
 .package-price { margin: 0.25rem 0 1rem; }
 .package-price strong { font-family: var(--serif); font-size: 1.45rem; font-weight: 400; color: var(--fascia-deep); }
 .package-card .btn { align-self: flex-start; }

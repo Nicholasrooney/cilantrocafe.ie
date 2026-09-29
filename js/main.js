@@ -336,9 +336,8 @@ function cookieChoice(set) {
   }
 })();
 
-// Catering price card: the live price, straight from the menu-linked figures
-// the server printed onto each package option. Works as a plain form without
-// this; the script just keeps the price in step as people choose.
+// Catering quote card: keeps the guest count in step, and lines the package
+// up with the occasion. Works as a plain form without any of this.
 (function () {
   var card = document.querySelector('[data-price-card]');
   if (!card) return;
@@ -346,39 +345,12 @@ function cookieChoice(set) {
   var range   = card.querySelector('.pc-range');
   var select  = card.querySelector('.pc-select');
   var guestEl = card.querySelector('[data-pc-guests]');
-  var priceEl = card.querySelector('[data-pc-price]');
-  var totalEl = card.querySelector('[data-pc-total]');
-  var nameEl  = card.querySelector('[data-pc-name]');
   if (!range || !select) return;
-
-  function euro(n, cents) {
-    return '€' + n.toLocaleString('en-IE', {
-      minimumFractionDigits: cents ? 2 : 0,
-      maximumFractionDigits: cents ? 2 : 0
-    });
-  }
 
   function update() {
     var guests = parseInt(range.value, 10) || 0;
-    var opt    = select.options[select.selectedIndex];
-    var price  = parseFloat(opt && opt.dataset.price);
-
     if (guestEl) guestEl.textContent = guests;
     range.setAttribute('aria-valuetext', guests + ' guests');
-    if (nameEl && opt) nameEl.textContent = opt.textContent.trim();
-
-    // Prices switched off in config: the card names the package instead.
-    if (!priceEl) return;
-
-    if (isNaN(price)) {
-      priceEl.textContent = 'Price on request';
-      totalEl.textContent = '';
-      return;
-    }
-
-    priceEl.innerHTML = euro(price, true) + ' <small>per person</small>';
-    // Same rounding as the server: nearest €5, because it is an estimate.
-    totalEl.textContent = 'around ' + euro(Math.round((price * guests) / 5) * 5, false) + ' for ' + guests + ' guests';
   }
 
   card.addEventListener('change', function (e) {
@@ -389,12 +361,11 @@ function cookieChoice(set) {
   });
   range.addEventListener('input', update);
 
-  // "Price this package" buttons further down the page.
+  // "Choose this package" buttons further down the page.
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-price-package]');
     if (!btn) return;
     select.value = btn.dataset.pricePackage;
-    update();
   });
 
   update();
