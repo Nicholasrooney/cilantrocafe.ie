@@ -199,7 +199,7 @@ function cat_error_attrs(array $errors, string $field): string
             <li>
                 <span class="catering-step-num">2</span>
                 <h3>We send you a quote</h3>
-                <p>We come back to you with a quote for your event, using the same dishes as our café menu.</p>
+                <p>We come back to you with a quote for your event.</p>
             </li>
             <li>
                 <span class="catering-step-num">3</span>
