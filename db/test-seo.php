@@ -112,8 +112,22 @@ check('a plain list of dates works too',
     hours_blocked_message('2026-10-03'), 'We are not taking any more bookings that day.');
 
 $GLOBALS['booking']['no_bookings_dates'] = $savedBlocked;
-check('this weekend is the one blocked',
-    array_keys($GLOBALS['booking']['no_bookings_dates']), ['2026-10-03', '2026-10-04']);
+
+// Whatever is configured, check it is usable: real dates, each one actually
+// refused. Asserting the dates themselves would mean editing this every time
+// a weekend is taken off.
+$badDates = $notRefused = [];
+foreach ($savedBlocked as $key => $value) {
+    $date = is_int($key) ? $value : $key;
+    if (!DateTimeImmutable::createFromFormat('!Y-m-d', $date)) {
+        $badDates[] = $date;
+    }
+    if (hours_blocked_message($date) === null) {
+        $notRefused[] = $date;
+    }
+}
+check('every blocked date is a real Y-m-d date', $badDates, []);
+check('every blocked date is actually refused', $notRefused, []);
 
 $display = hours_display();
 check('closed day shown as Closed',  $display['Monday'], 'Closed');

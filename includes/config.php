@@ -73,8 +73,9 @@ $booking = [
      *     '2026-12-25' => 'We are closed for Christmas.',
      */
     'no_bookings_dates' => [
-        '2026-10-03' => '',   // Saturday
-        '2026-10-04' => '',   // Sunday
+        '2026-10-09' => '',   // Friday
+        '2026-10-10' => '',   // Saturday
+        '2026-10-11' => '',   // Sunday
     ],
 
     // Filled in below from service_hours. Do not edit by hand.
